@@ -16,7 +16,7 @@
 #define PIN_RADIUS 20
 #define PIN_DISTANCE 30
 
-#define OBSTACLE_NUM 2
+#define OBSTACLE_NUM 5
 
 typedef struct {
   float x_velocity;
@@ -76,8 +76,10 @@ int main () {
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);
   UnloadImage(backgroundImage);
 
+  // TODO: Handle these in different functions for better readability
+  // like a function for Player
   // Input power and angle
-  float power = 5.0f;
+  float power = 10.0f;
   float angle = 135.0f;
 
   // Compute velocity from input
@@ -95,9 +97,9 @@ int main () {
 
   // Create Obstacles
   Obstacle obstacles[OBSTACLE_NUM];
-  // for (int i = 0; i < OBSTACLE_NUM; ++i) {
-  //   obstacles[i] = createObstacle();
-  // }
+  for (int i = 0; i < OBSTACLE_NUM; ++i) {
+    obstacles[i] = createObstacle();
+  }
 
   while(!WindowShouldClose()) {
     BeginDrawing();
