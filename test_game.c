@@ -263,7 +263,7 @@ void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles) {
 
   // Check Collision with Walls
   // Bounce the ball off the left and right walls
-  if (ball->x_pos > 800 - BALL_RADIUS || ball->x_pos < 400 + BALL_RADIUS) {
+  if (ball->x_pos > 780 - BALL_RADIUS || ball->x_pos < 420 + BALL_RADIUS) {
     ball->x_velocity *= -BALL_DAMPENING;
   }
 
