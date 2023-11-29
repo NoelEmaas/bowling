@@ -1,12 +1,31 @@
 #include "scoreboard.h"
 
+Scoreboard createScoreboard() {
+    Scoreboard scoreboard;
+
+    scoreboard.current_round = 0;
+    scoreboard.game_over = false;
+    scoreboard.winner = -1;
+
+    scoreboard.p1_final_score = 0;
+    scoreboard.p2_final_score = 0;
+
+    scoreboard.p1_games_won = 0;
+    scoreboard.p2_games_won = 0;
+    
+    for (int i = 0; i < ROUND_NUM; i++) 
+        scoreboard.rounds[i] = createRound(i);
+
+    return scoreboard;
+}
+
 void displayScoreboard(Scoreboard *scoreboard, int currentPlayer) {
     // Display P1 & P2
     DrawText("1", 288, 30, 45, (currentPlayer == 1) ? PURPLE : GRAY);
     DrawText("2", 340, 30, 45, (currentPlayer == 2) ? PURPLE : GRAY);
 
     // Display rounds
-    for (int i = 0; i < ROUNDS; i++) 
+    for (int i = 0; i < ROUND_NUM; i++) 
         displayRound(scoreboard->rounds[i], 21, 80 + i * 60, scoreboard->current_round == i);
 
     char buffer[20];
@@ -29,7 +48,31 @@ void displayScoreboard(Scoreboard *scoreboard, int currentPlayer) {
 
     sprintf(buffer, "%d", scoreboard->p2_games_won);
     DrawText(&buffer, 338, 806, 50, PURPLE);
+}
 
+void roll(Scoreboard *scoreboard, int player, int throw_no, int score) {
+    if (player == 1) {
+        scoreboard->rounds[scoreboard->current_round].p1_throw_1 = (throw_no == 1) ? score : 0;
+        scoreboard->rounds[scoreboard->current_round].p1_throw_2 = (throw_no == 2) ? score : 0;
+        scoreboard->rounds[scoreboard->current_round].p1_score += score;
+    } else {
+        scoreboard->rounds[scoreboard->current_round].p2_throw_1 = (throw_no == 1) ? score : 0;
+        scoreboard->rounds[scoreboard->current_round].p2_throw_2 = (throw_no == 2) ? score : 0;
+        scoreboard->rounds[scoreboard->current_round].p2_score += score;
+    }
+}
+
+void nextRound(Scoreboard *scoreboard) {
+    scoreboard->current_round++;
+}
+
+void setWinner(Scoreboard *scoreboard) {
+    int p1 = 0, p2 = 0;
+
+    for (int i = 0; i < ROUND_NUM; i++) {
+        p1 += scoreboard->rounds[i].p1_score;
+        p2 += scoreboard->rounds[i].p2_score;
+    }
 }
 
 Round createRound(int round_no) {
@@ -89,48 +132,3 @@ void displayRound(Round round, int x, int y, bool current) {
         DrawText(&buffer, x + 320, y + 33, 25, GRAY);
     }
 }
-
-Scoreboard createScoreboard() {
-    Scoreboard scoreboard;
-
-    scoreboard.current_round = 0;
-    scoreboard.game_over = false;
-    scoreboard.winner = -1;
-
-    scoreboard.p1_final_score = 0;
-    scoreboard.p2_final_score = 0;
-
-    scoreboard.p1_games_won = 0;
-    scoreboard.p2_games_won = 0;
-    
-    for (int i = 0; i < ROUNDS; i++) 
-        scoreboard.rounds[i] = createRound(i);
-
-    return scoreboard;
-}
-
-void roll(Scoreboard *scoreboard, int player, int throw_no, int score) {
-    if (player == 1) {
-        scoreboard->rounds[scoreboard->current_round].p1_throw_1 = (throw_no == 1) ? score : 0;
-        scoreboard->rounds[scoreboard->current_round].p1_throw_2 = (throw_no == 2) ? score : 0;
-        scoreboard->rounds[scoreboard->current_round].p1_score += score;
-    } else {
-        scoreboard->rounds[scoreboard->current_round].p2_throw_1 = (throw_no == 1) ? score : 0;
-        scoreboard->rounds[scoreboard->current_round].p2_throw_2 = (throw_no == 2) ? score : 0;
-        scoreboard->rounds[scoreboard->current_round].p2_score += score;
-    }
-}
-
-void nextRound(Scoreboard *scoreboard) {
-    scoreboard->current_round++;
-}
-
-void setWinner(Scoreboard *scoreboard) {
-    int p1 = 0, p2 = 0;
-
-    for (int i = 0; i < ROUNDS; i++) {
-        p1 += scoreboard->rounds[i].p1_score;
-        p2 += scoreboard->rounds[i].p2_score;
-    }
-}
-

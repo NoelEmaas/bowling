@@ -2,7 +2,7 @@
 #define SCOREBOARD_H
 
 #include "raylib.h"
-#define ROUNDS 10
+#define ROUND_NUM 10
 
 typedef struct {
     int round_no;
@@ -17,7 +17,7 @@ typedef struct {
 } Round;
 
 typedef struct {
-    Round rounds[ROUNDS];
+    Round rounds[ROUND_NUM];
     int current_round;
 
     int p1_final_score;
