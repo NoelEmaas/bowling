@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #define SCREEN_WIDTH 1200
-#define SCREEN_HEIGHT 800
+#define SCREEN_HEIGHT 880
 
 #define BALL_RADIUS 35
 
@@ -53,6 +53,9 @@ void checkCollision (Ball *ball, Frame *frame);
 
 int main () {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Basic Window");
+  Image backgroundImage = LoadImage("bowling_bg.png");
+  Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);
+  UnloadImage(backgroundImage);
   SetTargetFPS(60);
 
   Ball ball = createBall(10.0f, 600.0f);    
@@ -62,6 +65,9 @@ int main () {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
+    // Draw Background Image
+    DrawTexture(backgroundTexture, 0, 0, WHITE);
+
     // Update
     updateBall(&ball);
 
@@ -69,9 +75,9 @@ int main () {
     checkCollision(&ball, &frame);
 
     // Draw 
-    drawScoreBoardFrame();
-    drawUserInputFrame();
-    drawBowlingGameFrame();
+    //drawScoreBoardFrame();
+    //drawUserInputFrame();
+    //drawBowlingGameFrame();
     drawBall(ball);        
     drawFrame(frame);
 
