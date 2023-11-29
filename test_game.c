@@ -15,7 +15,8 @@
 #define PIN_RADIUS 20
 #define PIN_DISTANCE 30
 
-// TODO: Add variables to allow for spin 
+#define OBSTACLE_NUM 2
+
 typedef struct {
   float x_velocity;
   float y_velocity;
@@ -39,10 +40,18 @@ typedef struct {
   Pin pins[PINS_NUM];
 } Frame;
 
+typedef struct {
+  Image image;
+  Texture2D texture;
+  Rectangle sourceRect;
+  Rectangle destRect;
+} Obstacle;
+
 Ball createBall (float x_velocity, float y_velocity, float x_pos);
 Player createPlayer (char name[20], int score, Ball ball);
 Pin createPin (bool is_knocked_down, float x_pos, float y_pos);
 Frame createFrame ();
+Obstacle createObstacle ();
 
 void drawScoreBoardFrame ();
 void drawUserInputFrame ();
@@ -52,20 +61,29 @@ void drawPin (Pin pin);
 void drawFrame (Frame frame);
 
 void updateBall(Ball *ball);
-void checkCollision (Ball *ball, Frame *frame);
+void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles);
 void applyDampening (Ball *ball);
-void checkBounds (Ball *ball);
 
 int main () {
+  // Initialization
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Basic Window");
+  SetTargetFPS(60);
+
+  // Load Background Image
   Image backgroundImage = LoadImage("bowling_bg.png");
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);
   UnloadImage(backgroundImage);
-  SetTargetFPS(60);
 
+  // Create Ball and Frame
   Ball ball = createBall(10.0f, 10.0f, 600.0f);    
   Frame frame = createFrame();
   Scoreboard scoreboard = createScoreboard();
+
+  // Create Obstacles
+  Obstacle obstacles[OBSTACLE_NUM];
+  for (int i = 0; i < OBSTACLE_NUM; ++i) {
+    obstacles[i] = createObstacle();
+  }
 
   while(!WindowShouldClose()) {
     BeginDrawing();
@@ -75,12 +93,16 @@ int main () {
     DrawTexture(backgroundTexture, 0, 0, WHITE);
 
     displayScoreboard(&scoreboard, 1);
+    // Draw Obstacles
+    for (int i = 0; i < OBSTACLE_NUM; ++i) {
+      DrawTexturePro(obstacles[i].texture, obstacles[i].sourceRect, obstacles[i].destRect, (Vector2) { 0, 0 }, 0.0f, WHITE);
+    }
 
     // Update
     updateBall(&ball);
 
-    // Check Collision
-    checkCollision(&ball, &frame);
+    // Check Collision with Pins, Walls, and Obstacles
+    checkCollision(&ball, &frame, obstacles);
 
     // Draw 
     //drawScoreBoardFrame();
@@ -133,6 +155,26 @@ Pin createPin (bool is_knocked_down, float x_pos, float y_pos) {
   return (Pin) { is_knocked_down, x_pos + 90, y_pos };
 }
 
+// TODO: Make sure that the obstacle is not created on top of other obstacles
+// For now, the obstace is created at a random position such that is does not spawn
+// on top of the pins or near the starting position of the ball
+Obstacle createObstacle () {
+  Obstacle obstacle;
+  float scale = 0.1f;
+
+  obstacle.image = LoadImage("obstacle.png");
+  obstacle.texture = LoadTextureFromImage(obstacle.image);
+
+  Vector2 position = { (float)GetRandomValue(400 + obstacle.texture.width * scale, 800 - obstacle.texture.width  * scale), (float)GetRandomValue(350 - obstacle.texture.height  * scale, 800 - obstacle.texture.height  * scale) };
+  
+  obstacle.sourceRect = (Rectangle) {0, 0, (float)obstacle.texture.width, (float)obstacle.texture.height};
+  obstacle.destRect = (Rectangle) {position.x, position.y, obstacle.texture.width * scale, obstacle.texture.height * scale};
+
+  UnloadImage(obstacle.image); 
+
+  return obstacle;
+}
+
 void drawScoreBoardFrame () {
   Rectangle frame = {20, 20, 360, 760};
   Rectangle frameBorder = {0, 0, 400, SCREEN_HEIGHT};
@@ -180,15 +222,10 @@ void drawFrame (Frame frame) {
   }
 }
 
-// TODO: Slow down the ball's velocity as it moves up the screen.
-// For now, the ball's velocity decreases by a factor of the dampening constant
 void updateBall(Ball *ball) {
   // Update the ball's position
   ball->x_pos += ball->x_velocity;
   ball->y_pos -= ball->y_velocity;
-
-  // Check if the ball hits the left, right, or top wall
-  checkBounds(ball);
 
   // Apply dampening to the ball
   applyDampening(ball);
@@ -205,9 +242,8 @@ void updateBall(Ball *ball) {
   }
 }
 
-// TODO: Update the ball's x_velocity when it hits the pins
-// For now, the ball's x_velocity decreases by 1.0f when it hits the pins
-void checkCollision (Ball *ball, Frame *frame) {
+void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles) {
+  // Check Collision with Pins    
   for (int i = 0; i < PINS_NUM; ++i) {
     if (!frame->pins[i].is_knocked_down) {
       if (CheckCollisionCircles((Vector2) { ball->x_pos, ball->y_pos }, BALL_RADIUS, (Vector2) { frame->pins[i].x_pos, frame->pins[i].y_pos }, PIN_RADIUS)) {
@@ -216,22 +252,16 @@ void checkCollision (Ball *ball, Frame *frame) {
       }
     }
   }
-}
 
-void applyDampening (Ball *ball) {
-  ball->x_velocity *= BALL_DAMPENING;
-  ball->y_velocity *= BALL_DAMPENING;
-}
+  // Check Collision with Obstacles
+  for (int i = 0; i < OBSTACLE_NUM; ++i) {
+    if (CheckCollisionRecs((Rectangle) { ball->x_pos - BALL_RADIUS, ball->y_pos - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2 }, obstacles[i].destRect)) {
+      ball->x_velocity *= -BALL_DAMPENING;
+      // ball->y_velocity *= -BALL_DAMPENING; // If y_velocity is changed, it causes the ball to get stuck in the obstacle
+    }
+  }
 
-// Checks if the ball hits the left, right, or top wall
-void checkBounds (Ball *ball) {
-  // // Stop the ball if it is at the topmost position
-  // if (ball->y_pos < 20.0f + BALL_RADIUS) {
-  //   ball->y_pos = BALL_RADIUS + 20.0f;
-  //   ball->x_velocity = 0.0f;
-  //   ball->y_velocity = 0.0f;
-  // }
-
+  // Check Collision with Walls
   // Bounce the ball off the left and right walls
   if (ball->x_pos > 800 - BALL_RADIUS || ball->x_pos < 400 + BALL_RADIUS) {
     ball->x_velocity *= -BALL_DAMPENING;
@@ -242,3 +272,9 @@ void checkBounds (Ball *ball) {
     ball->y_velocity *= -BALL_DAMPENING;
   }
 }
+
+void applyDampening (Ball *ball) {
+  ball->x_velocity *= BALL_DAMPENING;
+  ball->y_velocity *= BALL_DAMPENING;
+}
+
