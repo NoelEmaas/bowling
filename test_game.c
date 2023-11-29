@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "scoreboard.h"
+
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 880
 
@@ -63,6 +65,7 @@ int main () {
 
   Ball ball = createBall(10.0f, 10.0f, 600.0f);    
   Frame frame = createFrame();
+  Scoreboard scoreboard = createScoreboard();
 
   while(!WindowShouldClose()) {
     BeginDrawing();
@@ -70,6 +73,8 @@ int main () {
 
     // Draw Background Image
     DrawTexture(backgroundTexture, 0, 0, WHITE);
+
+    displayScoreboard(&scoreboard, 1);
 
     // Update
     updateBall(&ball);
