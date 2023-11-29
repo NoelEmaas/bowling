@@ -1,5 +1,10 @@
 #include "scoreboard.h"
 
+#include <stdio.h>
+
+#include "raylib.h"
+
+
 Scoreboard createScoreboard() {
     Scoreboard scoreboard;
 
@@ -28,26 +33,26 @@ void displayScoreboard(Scoreboard *scoreboard, int currentPlayer) {
     for (int i = 0; i < ROUND_NUM; i++) 
         displayRound(scoreboard->rounds[i], 21, 80 + i * 60, scoreboard->current_round == i);
 
-    char buffer[20];
-
+    scoreboard->game_over = true;
     if (scoreboard->game_over) {
         // Display final score
-        sprintf(buffer, "%d", scoreboard->p1_final_score);
-        DrawText(&buffer, 280, 686, 50, PURPLE);
+        const char *final_score = TextFormat("%d", scoreboard->p1_final_score);
+        DrawText(final_score, 280, 686, 50, PURPLE);
 
-        sprintf(buffer, "%d", scoreboard->p2_final_score);
-        DrawText(&buffer, 338, 687, 50, PURPLE);
+        const char *p2_final_score = TextFormat("%d", scoreboard->p2_final_score);
+        DrawText(p2_final_score, 338, 687, 50, PURPLE);
+
         // Display winner
-        sprintf(buffer, "PLAYER %d - BOWL", scoreboard->winner);
-        DrawText(&buffer, 50, 755, 35, PURPLE);
+        const char *winner = TextFormat("PLAYER %d - BOWL", scoreboard->winner);
+        DrawText(winner, 50, 755, 35, PURPLE);
     }
 
     // Display games won
-    sprintf(buffer, "%d", scoreboard->p1_games_won);
-    DrawText(&buffer, 280, 806, 50, PURPLE);
+    const char *p1_games_won = TextFormat("%d", scoreboard->p1_games_won);
+    DrawText(p1_games_won, 280, 806, 50, PURPLE);
 
-    sprintf(buffer, "%d", scoreboard->p2_games_won);
-    DrawText(&buffer, 338, 806, 50, PURPLE);
+    const char *p2_games_won = TextFormat("%d", scoreboard->p2_games_won);
+    DrawText(p2_games_won, 338, 806, 50, PURPLE);
 }
 
 void roll(Scoreboard *scoreboard, int player, int throw_no, int score) {
@@ -92,43 +97,43 @@ Round createRound(int round_no) {
 }
 
 void displayRound(Round round, int x, int y, bool current) {
-    char buffer[10];
+    // char buffer[10];
 
-    // Display frame_no
-    sprintf(buffer, "%d", round.round_no);
-    DrawText(&buffer, x + 200, y + 10, 45, (current) ? GREEN : GRAY);
+    // Display round_no
+    const char *round_no = TextFormat("%d", round.round_no);
+    DrawText(round_no, x + 200, y + 10, 45, (current) ? GREEN : GRAY);
 
     // Display throw_scores for P1
     if (round.p1_throw_1 != -1) {
-        sprintf(buffer, "%d", round.p1_throw_1);
-        DrawText(&buffer, x + 251, y + 3, 25, GRAY);
+        const char *p1_throw_1 = TextFormat("%d", round.p1_throw_1);
+        DrawText(p1_throw_1, x + 251, y + 3, 25, GRAY);
     }
 
     if (round.p1_throw_2 != -1) {
-        sprintf(buffer, "%d", round.p1_throw_2);
-        DrawText(&buffer, x + 280, y + 3, 25, GRAY);
+        const char *p1_throw_2 = TextFormat("%d", round.p1_throw_2);
+        DrawText(p1_throw_2, x + 280, y + 3, 25, GRAY);
     }
 
     // Display throw_scores for P2
     if (round.p2_throw_1 != -1) {
-        sprintf(buffer, "%d", round.p2_throw_1);
-        DrawText(&buffer, x + 308, y + 3, 25, GRAY);
+        const char *p2_throw_1 = TextFormat("%d", round.p2_throw_1);
+        DrawText(p2_throw_1, x + 308, y + 3, 25, GRAY);
     }
 
     if (round.p2_throw_2 != -1) {
-        sprintf(buffer, "%d", round.p2_throw_2);
-        DrawText(&buffer, x + 337, y + 3, 25, GRAY);
+        const char *p2_throw_2 = TextFormat("%d", round.p2_throw_2);
+        DrawText(p2_throw_2, x + 337, y + 3, 25, GRAY);
     }
 
     // Display total frame score for p1
     if (round.p1_throw_1 != -1) {
-        sprintf(buffer, "%d", round.p1_score);
-        DrawText(&buffer, x + 265, y + 33, 25, GRAY);
+        const char *p1_score = TextFormat("%d", round.p1_score);
+        DrawText(p1_score, x + 265, y + 33, 25, GRAY);
     }
 
     // Display total frame score for p2
     if (round.p2_throw_1 != -1) {
-        sprintf(buffer, "%d", round.p2_score);
-        DrawText(&buffer, x + 320, y + 33, 25, GRAY);
+        const char *p2_score = TextFormat("%d", round.p2_score);
+        DrawText(p2_score, x + 320, y + 33, 25, GRAY);
     }
 }
