@@ -7,6 +7,7 @@
 #define SCREEN_HEIGHT 880
 
 #define BALL_RADIUS 35
+#define BALL_DAMPENING 0.99f
 
 #define PINS_NUM 10
 #define PIN_RADIUS 20
@@ -14,7 +15,8 @@
 
 // TODO: Add variables to allow for spin 
 typedef struct {
-  float velocity;
+  float x_velocity;
+  float y_velocity;
   float x_pos;
   float y_pos;
 } Ball;
@@ -35,7 +37,7 @@ typedef struct {
   Pin pins[PINS_NUM];
 } Frame;
 
-Ball createBall (float velocity, float x_pos);
+Ball createBall (float x_velocity, float y_velocity, float x_pos);
 Player createPlayer (char name[20], int score, Ball ball);
 Pin createPin (bool is_knocked_down, float x_pos, float y_pos);
 Frame createFrame ();
@@ -48,8 +50,9 @@ void drawPin (Pin pin);
 void drawFrame (Frame frame);
 
 void updateBall(Ball *ball);
-void updatePin(Pin *pin);
 void checkCollision (Ball *ball, Frame *frame);
+void applyDampening (Ball *ball);
+void checkBounds (Ball *ball);
 
 int main () {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Basic Window");
@@ -58,7 +61,7 @@ int main () {
   UnloadImage(backgroundImage);
   SetTargetFPS(60);
 
-  Ball ball = createBall(10.0f, 600.0f);    
+  Ball ball = createBall(10.0f, 10.0f, 600.0f);    
   Frame frame = createFrame();
 
   while(!WindowShouldClose()) {
@@ -90,9 +93,9 @@ int main () {
 
 // Ball's y_pos is set to default value of 700.0f 
 // because the control is only in the x-axis
-Ball createBall (float velocity, float x_pos) {
+Ball createBall (float x_velocity, float y_velocity, float x_pos) {
   float y_pos = 700.0f;
-  return (Ball) { velocity, x_pos,  y_pos};
+  return (Ball) { x_velocity, y_velocity, x_pos, y_pos };
 }
 
 Player createPlayer (char name[20], int score, Ball ball) {
@@ -173,36 +176,64 @@ void drawFrame (Frame frame) {
 }
 
 // TODO: Slow down the ball's velocity as it moves up the screen.
-// For now, the ball's velocity decreases by 0.01f every frame until it reaches 0.0f
+// For now, the ball's velocity decreases by a factor of the dampening constant
 void updateBall(Ball *ball) {
-  ball->y_pos -= ball->velocity;
+  // Update the ball's position
+  ball->x_pos += ball->x_velocity;
+  ball->y_pos -= ball->y_velocity;
 
-  // Do not display the ball if it is beyond the border of the frames
-  if (ball->y_pos < 20.0f + BALL_RADIUS) {
-    ball->y_pos = BALL_RADIUS + 20.0f;
-    ball->velocity = 0.0f;
+  // Check if the ball hits the left, right, or top wall
+  checkBounds(ball);
+
+  // Apply dampening to the ball
+  applyDampening(ball);
+
+  // Stop the ball if its moving too slow
+  if (ball->x_velocity < 0.1f && ball->x_velocity > -0.1f) {
+    ball->x_velocity = 0.0f;
+    ball->y_velocity = 0.0f;
   }
 
-  // Velocity should not be negative
-  if (ball->velocity > 0.0f) {
-    ball->velocity -= 0.01f;
-  } else {
-    ball->velocity = 0.0f;
+  if (ball->y_velocity < 0.1f && ball->y_velocity > -0.1f) {
+    ball->y_velocity = 0.0f;
+    ball->x_velocity = 0.0f;
   }
 }
 
-// TODO: Update the ball's velocity when it hits the pins
-// For now, the ball's velocity decreases by 1.0f when it hits the pins
+// TODO: Update the ball's x_velocity when it hits the pins
+// For now, the ball's x_velocity decreases by 1.0f when it hits the pins
 void checkCollision (Ball *ball, Frame *frame) {
   for (int i = 0; i < PINS_NUM; ++i) {
     if (!frame->pins[i].is_knocked_down) {
       if (CheckCollisionCircles((Vector2) { ball->x_pos, ball->y_pos }, BALL_RADIUS, (Vector2) { frame->pins[i].x_pos, frame->pins[i].y_pos }, PIN_RADIUS)) {
         frame->pins[i].is_knocked_down = true;
-        ball->velocity -= 1.0f;
+        applyDampening(ball);
       }
     }
   }
 }
 
+void applyDampening (Ball *ball) {
+  ball->x_velocity *= BALL_DAMPENING;
+  ball->y_velocity *= BALL_DAMPENING;
+}
 
+// Checks if the ball hits the left, right, or top wall
+void checkBounds (Ball *ball) {
+  // // Stop the ball if it is at the topmost position
+  // if (ball->y_pos < 20.0f + BALL_RADIUS) {
+  //   ball->y_pos = BALL_RADIUS + 20.0f;
+  //   ball->x_velocity = 0.0f;
+  //   ball->y_velocity = 0.0f;
+  // }
 
+  // Bounce the ball off the left and right walls
+  if (ball->x_pos > 800 - BALL_RADIUS || ball->x_pos < 400 + BALL_RADIUS) {
+    ball->x_velocity *= -BALL_DAMPENING;
+  }
+
+  // Bounce the ball off the top wall
+  if (ball->y_pos < 20.0f + BALL_RADIUS) {
+    ball->y_velocity *= -BALL_DAMPENING;
+  }
+}
