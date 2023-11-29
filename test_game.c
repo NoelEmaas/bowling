@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "scoreboard.h"
 
@@ -63,6 +64,7 @@ void drawFrame (Frame frame);
 void updateBall(Ball *ball);
 void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles);
 void applyDampening (Ball *ball);
+Vector2 computeVelocityFromInput(float power, float angle);
 
 int main () {
   // Initialization
@@ -74,16 +76,28 @@ int main () {
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);
   UnloadImage(backgroundImage);
 
+  // Input power and angle
+  float power = 5.0f;
+  float angle = 135.0f;
+
+  // Compute velocity from input
+  Vector2 velocity = computeVelocityFromInput(power, angle);
+  float x_velocity = velocity.x;
+  float y_velocity = velocity.y;
+
+  printf("x_velocity: %f\n", x_velocity);
+  printf("y_velocity: %f\n", y_velocity);
+
   // Create Ball and Frame
-  Ball ball = createBall(10.0f, 10.0f, 600.0f);    
+  Ball ball = createBall(x_velocity, y_velocity, 600.0f);    
   Frame frame = createFrame();
   Scoreboard scoreboard = createScoreboard();
 
   // Create Obstacles
   Obstacle obstacles[OBSTACLE_NUM];
-  for (int i = 0; i < OBSTACLE_NUM; ++i) {
-    obstacles[i] = createObstacle();
-  }
+  // for (int i = 0; i < OBSTACLE_NUM; ++i) {
+  //   obstacles[i] = createObstacle();
+  // }
 
   while(!WindowShouldClose()) {
     BeginDrawing();
@@ -231,14 +245,9 @@ void updateBall(Ball *ball) {
   applyDampening(ball);
 
   // Stop the ball if its moving too slow
-  if (ball->x_velocity < 0.1f && ball->x_velocity > -0.1f) {
+  if (ball->x_velocity < 0.1f && ball->x_velocity > -0.1f && ball->y_velocity < 0.1f && ball->y_velocity > -0.1f) {
     ball->x_velocity = 0.0f;
     ball->y_velocity = 0.0f;
-  }
-
-  if (ball->y_velocity < 0.1f && ball->y_velocity > -0.1f) {
-    ball->y_velocity = 0.0f;
-    ball->x_velocity = 0.0f;
   }
 }
 
@@ -278,3 +287,6 @@ void applyDampening (Ball *ball) {
   ball->y_velocity *= BALL_DAMPENING;
 }
 
+Vector2 computeVelocityFromInput(float power, float angle) {
+  return (Vector2) { power * cos(angle * DEG2RAD), power * sin(angle * DEG2RAD) };
+}
