@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "scoreboard.h"
+
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 880
 
@@ -75,6 +77,7 @@ int main () {
   // Create Ball and Frame
   Ball ball = createBall(10.0f, 10.0f, 600.0f);    
   Frame frame = createFrame();
+  Scoreboard scoreboard = createScoreboard();
 
   // Create Obstacles
   Obstacle obstacles[OBSTACLE_NUM];
@@ -89,6 +92,7 @@ int main () {
     // Draw Background Image
     DrawTexture(backgroundTexture, 0, 0, WHITE);
 
+    displayScoreboard(&scoreboard, 1);
     // Draw Obstacles
     for (int i = 0; i < OBSTACLE_NUM; ++i) {
       DrawTexturePro(obstacles[i].texture, obstacles[i].sourceRect, obstacles[i].destRect, (Vector2) { 0, 0 }, 0.0f, WHITE);
