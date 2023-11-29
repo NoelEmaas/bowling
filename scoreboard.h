@@ -1,7 +1,6 @@
 #ifndef SCOREBOARD_H
 #define SCOREBOARD_H
 
-#include "raylib.h"
 #define ROUND_NUM 10
 
 typedef struct {
