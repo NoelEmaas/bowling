@@ -3,6 +3,8 @@
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 800
 
+#define LIGHTGRAY (Color){ 200, 200, 200, 255 } 
+
 void drawScoreBoardFrame ();
 void drawUserInputFrame ();
 void drawBowlingGameFrame ();
