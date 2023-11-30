@@ -47,6 +47,10 @@ typedef struct {
   bool is_knocked_down;
   float x_pos;
   float y_pos;
+  Image image;
+  Texture2D texture;
+  Rectangle sourceRect;
+  Rectangle destRect;
 } Pin;
 
 typedef struct {
@@ -70,6 +74,9 @@ typedef struct {
 Ball createBall (float x_velocity, float y_velocity, float x_pos);
 Player createPlayer (char name[20], int score, Ball ball);
 Pin createPin (bool is_knocked_down, float x_pos, float y_pos);
+void createTriangleFrame(Frame *frame, float startX, float startY);
+void createHollowSquareFrame(Frame *frame, float startX, float startY);
+void createDiamondFrame(Frame *frame, float startX, float startY);
 Frame createFrame ();
 Obstacle createObstacle ();
 
@@ -192,71 +199,91 @@ Frame createFrame () {
   srand(time(NULL));
   int random = (rand() % 3) + 1;
   int startY = 100.0f;
+
   switch (random) {
-  
-  // Case 1 is triangle
-  case 1:
-    for (int i = 0; i < PINS_NUM; ++i) {
-      if (i < 4) {
-        frame.pins[i] = createPin(false, 400.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), 100.0f);
-      } else if (i < 7) {
-        frame.pins[i] = createPin(false, 400.0f + ((i - 4) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS + PIN_DISTANCE / 2, 100.0f + PIN_RADIUS * 2 + PIN_DISTANCE);
-      } else if (i < 9) {
-        frame.pins[i] = createPin(false, 400.0f + ((i - 7) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 2 + PIN_DISTANCE, 100.0f + PIN_RADIUS * 4 + PIN_DISTANCE * 2);
-      } else {
-        frame.pins[i] = createPin(false, 400.0f + ((i - 9) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 3 + PIN_DISTANCE * 1.5, 100.0f + PIN_RADIUS * 6 + PIN_DISTANCE * 3);
-      }
+        case 1: // Triangle
+            createTriangleFrame(&frame, 400.0f, startY);
+            break;
+        case 2: // Hollow Square
+            createHollowSquareFrame(&frame, 440.0f, startY);
+            break;
+        case 3: // Diamond
+            createDiamondFrame(&frame, 510.0f, startY);
+            break;
+        default:
+            break;
     }
-    break;
-  
-  // Case 2 is hollow square
-  case 2:
-
-    for (int i = 0; i < 3; ++i) {
-      frame.pins[i] = createPin(false, 440.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY);
-    }
-
-    for (int i = 3; i < 5; ++i) {
-      frame.pins[i] = createPin(false, 440.0f + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + ((i - 2) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
-    }
-
-    for (int i = 5; i < 8; ++i) {
-      frame.pins[i] = createPin(false, 440.0f + ((7 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)));
-    }
-
-    for (int i = 8; i < 10; ++i) {
-      frame.pins[i] = createPin(false, 440.0f, startY + ((9 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
-    }
-    break;
-  
-  // Case 3 is diamond
-  case 3:
-    frame.pins[0] = createPin(false, 510.0f, startY);
-
-    frame.pins[1] = createPin(false, 510.0f - (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 2 + PIN_DISTANCE));
-    frame.pins[2] = createPin(false, 510.0f + (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 2 + PIN_DISTANCE));
-
-    frame.pins[3] = createPin(false, 510.0f - (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 4 + PIN_DISTANCE * 3));
-    frame.pins[4] = createPin(false, 510.0f + (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 4 + PIN_DISTANCE * 3));
-
-    frame.pins[5] = createPin(false, 510.0f, startY + (PIN_RADIUS * 6 + PIN_DISTANCE * 4));
-
-    frame.pins[6] = createPin(false, 510.0f - (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
-    frame.pins[7] = createPin(false, 510.0f + (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
-    frame.pins[8] = createPin(false, 510.0f - (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
-    frame.pins[9] = createPin(false, 510.0f + (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
-    break;
-    
-  default: break;
-  }
 
   return frame;
 } 
+void createTriangleFrame(Frame *frame, float startX, float startY) {
+    for (int i = 0; i < PINS_NUM; ++i) {
+      if (i < 4) {
+        frame->pins[i] = createPin(false, 400.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), 100.0f);
+      } else if (i < 7) {
+        frame->pins[i] = createPin(false, 400.0f + ((i - 4) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS + PIN_DISTANCE / 2, 100.0f + PIN_RADIUS * 2 + PIN_DISTANCE);
+      } else if (i < 9) {
+        frame->pins[i] = createPin(false, 400.0f + ((i - 7) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 2 + PIN_DISTANCE, 100.0f + PIN_RADIUS * 4 + PIN_DISTANCE * 2);
+      } else {
+        frame->pins[i] = createPin(false, 400.0f + ((i - 9) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 3 + PIN_DISTANCE * 1.5, 100.0f + PIN_RADIUS * 6 + PIN_DISTANCE * 3);
+      }
+    }
+}
+
+void createHollowSquareFrame(Frame *frame, float startX, float startY) {
+  for (int i = 0; i < 3; ++i) {
+      frame->pins[i] = createPin(false, 440.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY);
+    }
+
+    for (int i = 3; i < 5; ++i) {
+      frame->pins[i] = createPin(false, 440.0f + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + ((i - 2) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+    }
+
+    for (int i = 5; i < 8; ++i) {
+      frame->pins[i] = createPin(false, 440.0f + ((7 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+    }
+
+    for (int i = 8; i < 10; ++i) {
+      frame->pins[i] = createPin(false, 440.0f, startY + ((9 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+    }
+}
 
 
-// Pin's x_pos is added by 90 to center the pins
-Pin createPin (bool is_knocked_down, float x_pos, float y_pos) {
-  return (Pin) { is_knocked_down, x_pos + 90, y_pos };
+void createDiamondFrame(Frame *frame, float startX, float startY) {
+  frame->pins[0] = createPin(false, 510.0f, startY);
+
+  frame->pins[1] = createPin(false, 510.0f - (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 2 + PIN_DISTANCE));
+  frame->pins[2] = createPin(false, 510.0f + (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 2 + PIN_DISTANCE));
+
+  frame->pins[3] = createPin(false, 510.0f - (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 4 + PIN_DISTANCE * 3));
+  frame->pins[4] = createPin(false, 510.0f + (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 4 + PIN_DISTANCE * 3));
+
+  frame->pins[5] = createPin(false, 510.0f, startY + (PIN_RADIUS * 6 + PIN_DISTANCE * 4));
+
+  frame->pins[6] = createPin(false, 510.0f - (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+  frame->pins[7] = createPin(false, 510.0f + (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+  frame->pins[8] = createPin(false, 510.0f - (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+  frame->pins[9] = createPin(false, 510.0f + (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+}
+
+Pin createPin(bool is_knocked_down, float x_pos, float y_pos) {
+    Pin pin;
+    float scale = 1.0f; 
+
+    pin.image = LoadImage("bowling_pin.png");
+    pin.texture = LoadTextureFromImage(pin.image);
+
+    Vector2 position = {x_pos, y_pos};
+    pin.sourceRect = (Rectangle){0, 0, (float)pin.texture.width, (float)pin.texture.height};
+    pin.destRect = (Rectangle){(position.x + 90) - pin.texture.width * scale / 2, position.y - pin.texture.height * scale / 2, pin.texture.width * scale, pin.texture.height * scale};
+
+    UnloadImage(pin.image); 
+
+    pin.is_knocked_down = is_knocked_down;
+    pin.x_pos = x_pos + 90;
+    pin.y_pos = y_pos;
+
+    return pin;
 }
 
 // TODO: Make sure that the obstacle is not created on top of other obstacles
@@ -317,11 +344,13 @@ void drawBall (Ball ball) {
   DrawCircleGradient(ball.x_pos, ball.y_pos, BALL_RADIUS, BALLCOLOR, BALLDARKCOLOR);
 }
 
-void drawPin (Pin pin) {
+void drawPin(Pin pin) {
   if (!pin.is_knocked_down) {
-    DrawCircle(pin.x_pos, pin.y_pos, PIN_RADIUS, WHITE);
+    DrawTexturePro(pin.texture, pin.sourceRect, pin.destRect, (Vector2){0, 0}, 0.0f, WHITE);
   }
 }
+
+
 
 void drawFrame (Frame frame) {
   for (int i = 0; i < PINS_NUM; ++i) {
@@ -350,6 +379,7 @@ void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles) {
     if (!frame->pins[i].is_knocked_down) {
       if (CheckCollisionCircles((Vector2) { ball->x_pos, ball->y_pos }, BALL_RADIUS, (Vector2) { frame->pins[i].x_pos, frame->pins[i].y_pos }, PIN_RADIUS)) {
         frame->pins[i].is_knocked_down = true;
+        printf("Pin %d is knocked down\n", i + 1);
         applyDampening(ball);
       }
     }
