@@ -189,12 +189,12 @@ Player createPlayer (char name[20], int score, Ball ball) {
 Frame createFrame () {
   Frame frame;
 
-  
-
   srand(time(NULL));
-  int random = (rand() % 2) + 1;
-
+  int random = (rand() % 3) + 1;
+  int startY = 100.0f;
   switch (random) {
+  
+  // Case 1 is triangle
   case 1:
     for (int i = 0; i < PINS_NUM; ++i) {
       if (i < 4) {
@@ -209,27 +209,44 @@ Frame createFrame () {
     }
     break;
   
+  // Case 2 is hollow square
   case 2:
-    float startX = 440.0f;
-    float startY = 100.0f;
 
     for (int i = 0; i < 3; ++i) {
-      frame.pins[i] = createPin(false, startX + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY);
+      frame.pins[i] = createPin(false, 440.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY);
     }
 
     for (int i = 3; i < 5; ++i) {
-      frame.pins[i] = createPin(false, startX + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + ((i - 2) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+      frame.pins[i] = createPin(false, 440.0f + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + ((i - 2) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
     }
 
     for (int i = 5; i < 8; ++i) {
-      frame.pins[i] = createPin(false, startX + ((7 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+      frame.pins[i] = createPin(false, 440.0f + ((7 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)));
     }
 
     for (int i = 8; i < 10; ++i) {
-      frame.pins[i] = createPin(false, startX, startY + ((9 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+      frame.pins[i] = createPin(false, 440.0f, startY + ((9 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
     }
     break;
   
+  // Case 3 is diamond
+  case 3:
+    frame.pins[0] = createPin(false, 510.0f, startY);
+
+    frame.pins[1] = createPin(false, 510.0f - (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 2 + PIN_DISTANCE));
+    frame.pins[2] = createPin(false, 510.0f + (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 2 + PIN_DISTANCE));
+
+    frame.pins[3] = createPin(false, 510.0f - (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 4 + PIN_DISTANCE * 3));
+    frame.pins[4] = createPin(false, 510.0f + (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 4 + PIN_DISTANCE * 3));
+
+    frame.pins[5] = createPin(false, 510.0f, startY + (PIN_RADIUS * 6 + PIN_DISTANCE * 4));
+
+    frame.pins[6] = createPin(false, 510.0f - (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+    frame.pins[7] = createPin(false, 510.0f + (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+    frame.pins[8] = createPin(false, 510.0f - (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+    frame.pins[9] = createPin(false, 510.0f + (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
+    break;
+    
   default: break;
   }
 
