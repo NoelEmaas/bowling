@@ -2,9 +2,6 @@
 
 #include <stdio.h>
 
-#include "raylib.h"
-
-
 Scoreboard createScoreboard() {
     Scoreboard scoreboard;
 
@@ -33,7 +30,6 @@ void displayScoreboard(Scoreboard *scoreboard, int currentPlayer) {
     for (int i = 0; i < ROUND_NUM; i++) 
         displayRound(scoreboard->rounds[i], 21, 80 + i * 60, scoreboard->current_round == i);
 
-    scoreboard->game_over = true;
     if (scoreboard->game_over) {
         // Display final score
         const char *final_score = TextFormat("%d", scoreboard->p1_final_score);
