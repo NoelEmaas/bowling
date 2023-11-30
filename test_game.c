@@ -22,7 +22,7 @@
 #define BALLCOLOR (Color){ 92, 75, 192, 255 } 
 #define BALLDARKCOLOR (Color){ 65, 50, 150, 255 }
 #define BALLSHADOWINNER (Color){ 81, 81, 81, 255 }
-#define BALLSHADOWOUTER (Color){ 0, 0, 0, 0 }
+#define BALLSHADOWOUTER (Color){ 0, 0, 0, 15 }
 
 typedef struct {
   float x_velocity;
@@ -230,10 +230,9 @@ void drawBowlingGameFrame () {
 
 void drawBall (Ball ball) {
   // Draw Ball Shadow
-  DrawCircleGradient(ball.x_pos, ball.y_pos, 45, BALLSHADOWINNER, BALLSHADOWOUTER);
+  DrawCircleGradient(ball.x_pos + 2, ball.y_pos + 5, 38, BALLSHADOWINNER, BALLSHADOWOUTER);
   // Draw Ball
   DrawCircleGradient(ball.x_pos, ball.y_pos, BALL_RADIUS, BALLCOLOR, BALLDARKCOLOR);
-  //DrawCircle(ball.x_pos, ball.y_pos, BALL_RADIUS, DARKBLUE);
 }
 
 void drawPin (Pin pin) {
