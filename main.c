@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "scoreboard.h"
 
@@ -186,20 +188,54 @@ Player createPlayer (char name[20], int score, Ball ball) {
 
 Frame createFrame () {
   Frame frame;
-  for (int i = 0; i < PINS_NUM; ++i) {
-    if (i < 4) {
-      frame.pins[i] = createPin(false, 400.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), 100.0f);
-    } else if (i < 7) {
-      frame.pins[i] = createPin(false, 400.0f + ((i - 4) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS + PIN_DISTANCE / 2, 100.0f + PIN_RADIUS * 2 + PIN_DISTANCE);
-    } else if (i < 9) {
-      frame.pins[i] = createPin(false, 400.0f + ((i - 7) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 2 + PIN_DISTANCE, 100.0f + PIN_RADIUS * 4 + PIN_DISTANCE * 2);
-    } else {
-      frame.pins[i] = createPin(false, 400.0f + ((i - 9) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 3 + PIN_DISTANCE * 1.5, 100.0f + PIN_RADIUS * 6 + PIN_DISTANCE * 3);
+
+  
+
+  srand(time(NULL));
+  int random = (rand() % 2) + 1;
+
+  switch (random) {
+  case 1:
+    for (int i = 0; i < PINS_NUM; ++i) {
+      if (i < 4) {
+        frame.pins[i] = createPin(false, 400.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), 100.0f);
+      } else if (i < 7) {
+        frame.pins[i] = createPin(false, 400.0f + ((i - 4) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS + PIN_DISTANCE / 2, 100.0f + PIN_RADIUS * 2 + PIN_DISTANCE);
+      } else if (i < 9) {
+        frame.pins[i] = createPin(false, 400.0f + ((i - 7) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 2 + PIN_DISTANCE, 100.0f + PIN_RADIUS * 4 + PIN_DISTANCE * 2);
+      } else {
+        frame.pins[i] = createPin(false, 400.0f + ((i - 9) * (PIN_RADIUS * 2 + PIN_DISTANCE)) + PIN_RADIUS * 3 + PIN_DISTANCE * 1.5, 100.0f + PIN_RADIUS * 6 + PIN_DISTANCE * 3);
+      }
     }
+    break;
+  
+  case 2:
+    float startX = 440.0f;
+    float startY = 100.0f;
+
+    for (int i = 0; i < 3; ++i) {
+      frame.pins[i] = createPin(false, startX + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY);
+    }
+
+    for (int i = 3; i < 5; ++i) {
+      frame.pins[i] = createPin(false, startX + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + ((i - 2) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+    }
+
+    for (int i = 5; i < 8; ++i) {
+      frame.pins[i] = createPin(false, startX + ((7 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY + (2 * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+    }
+
+    for (int i = 8; i < 10; ++i) {
+      frame.pins[i] = createPin(false, startX, startY + ((9 - i) * (PIN_RADIUS * 2 + PIN_DISTANCE)));
+    }
+    break;
+  
+  default: break;
   }
 
   return frame;
-}
+} 
+
 
 // Pin's x_pos is added by 90 to center the pins
 Pin createPin (bool is_knocked_down, float x_pos, float y_pos) {
