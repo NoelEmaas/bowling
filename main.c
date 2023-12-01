@@ -100,7 +100,7 @@ int main () {
   SetTargetFPS(60);
 
   // Load Background Image
-  Image backgroundImage = LoadImage("bowling_bg.png");
+  Image backgroundImage = LoadImage("./assets/bowling_bg.png");
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);
   UnloadImage(backgroundImage);
 
@@ -270,7 +270,7 @@ Pin createPin(bool is_knocked_down, float x_pos, float y_pos) {
     Pin pin;
     float scale = 1.0f; 
 
-    pin.image = LoadImage("bowling_pin.png");
+    pin.image = LoadImage("./assets/bowling_pin.png");
     pin.texture = LoadTextureFromImage(pin.image);
 
     Vector2 position = {x_pos, y_pos};
@@ -293,7 +293,7 @@ Obstacle createObstacle () {
   Obstacle obstacle;
   float scale = 0.1f;
 
-  obstacle.image = LoadImage("obstacle.png");
+  obstacle.image = LoadImage("./assets/obstacle.png");
   obstacle.texture = LoadTextureFromImage(obstacle.image);
 
   Vector2 position = { (float)GetRandomValue(400 + obstacle.texture.width * scale, 800 - obstacle.texture.width  * scale), (float)GetRandomValue(350 - obstacle.texture.height  * scale, 800 - obstacle.texture.height  * scale) };
