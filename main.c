@@ -59,8 +59,10 @@ int main () {
         printf("Checking collision between obstacle %d and %d\n", i, j);
         printf("Obstacle %d: x: %f, y: %f\n", i, obstacles[i].destRect.x, obstacles[i].destRect.y);
         printf("Obstacle %d: x: %f, y: %f\n", j, obstacles[j].destRect.x, obstacles[j].destRect.y);
-        while (CheckCollisionRecs(obstacles[i].destRect, obstacles[j].destRect)) {
+        if (CheckCollisionRecs(obstacles[i].destRect, obstacles[j].destRect)) {
+          printf("Collision detected\n");
           obstacles[i] = createObstacle();
+          j = 0;
         }
       }
     }
