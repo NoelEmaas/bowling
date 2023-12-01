@@ -52,7 +52,19 @@ int main () {
   Obstacle obstacles[OBSTACLE_NUM];
   for (int i = 0; i < OBSTACLE_NUM; ++i) {
     obstacles[i] = createObstacle();
-  }
+
+    // Check if the obstacle is created on top of other obstacles
+    if (i > 0) {
+      for (int j = 0; j < i; ++j) {
+        printf("Checking collision between obstacle %d and %d\n", i, j);
+        printf("Obstacle %d: x: %f, y: %f\n", i, obstacles[i].destRect.x, obstacles[i].destRect.y);
+        printf("Obstacle %d: x: %f, y: %f\n", j, obstacles[j].destRect.x, obstacles[j].destRect.y);
+        while (CheckCollisionRecs(obstacles[i].destRect, obstacles[j].destRect)) {
+          obstacles[i] = createObstacle();
+        }
+      }
+    }
+  } 
 
   while(!WindowShouldClose()) {
     BeginDrawing();
