@@ -16,6 +16,7 @@
 #define BALLSHADOWOUTER (Color){ 0, 0, 0, 0 }
 #define BARBORDERCOLOR (Color){ 54, 54, 54, 255 }
 #define BARBGCOLOR (Color){ 92, 92, 92, 255 }
+#define FRAMEBORDERCOLOR (Color){ 54, 54, 54, 255 }
 
 #define PINS_NUM 10
 #define PIN_RADIUS 20

@@ -74,7 +74,10 @@ void createDiamondFrame(Frame *frame, float startX, float startY) {
   frame->pins[9] = createPin(false, 510.0f + (PIN_RADIUS * 2 + PIN_DISTANCE), startY + (PIN_RADIUS * 3 + PIN_DISTANCE * 2));
 }
 
-
+void drawFrameBorder () {
+  Rectangle frameBorder = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+  DrawRectangleLinesEx(frameBorder, 20, FRAMEBORDERCOLOR);
+}
 
 void drawScoreBoardFrame () {
   Rectangle frame = {20, 20, 360, 760};
@@ -110,4 +113,5 @@ void drawFrame (Frame frame) {
   for (int i = 0; i < PINS_NUM; ++i) {
     drawPin(frame.pins[i]);
   }
+  drawFrameBorder();
 }
