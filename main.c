@@ -14,6 +14,8 @@
 #define BALL_RADIUS 35
 #define BALL_DAMPENING 0.99f
 
+#define MAX_FORCE 15.0f
+
 #define PINS_NUM 10
 #define PIN_RADIUS 20
 #define PIN_DISTANCE 30
@@ -25,6 +27,8 @@
 #define BALLDARKCOLOR (Color){ 65, 50, 150, 255 }
 #define BALLSHADOWINNER (Color){ 81, 81, 81, 255 }
 #define BALLSHADOWOUTER (Color){ 0, 0, 0, 0 }
+#define BARBORDERCOLOR (Color){ 54, 54, 54, 255 }
+#define BARBGCOLOR (Color){ 92, 92, 92, 255 }
 
 // min and max angles for input
 #define MAX_ANGLE 135
@@ -35,6 +39,7 @@ typedef struct {
   float y_velocity;
   float x_pos;
   float y_pos;
+  bool is_released;
 } Ball;
 
 typedef struct {
@@ -67,11 +72,10 @@ typedef struct {
 typedef struct {
   float arrow_angle;
   int angle_speed;
-  bool ball_released;
   bool arrow_moving;
 } AngleControl;
 
-Ball createBall (float x_velocity, float y_velocity, float x_pos);
+Ball createBall (float x_velocity, float y_velocity, float x_pos, float y_pos, bool is_released);
 Player createPlayer (char name[20], int score, Ball ball);
 Pin createPin (bool is_knocked_down, float x_pos, float y_pos);
 void createTriangleFrame(Frame *frame, float startX, float startY);
@@ -87,8 +91,10 @@ void drawBall (Ball ball);
 void drawPin (Pin pin);
 void drawFrame (Frame frame);
 void drawInputAngle(AngleControl angle_control, Ball ball);
+void drawInputForceBarFrame(Ball ball);
+void drawInputForce(float power);
 
-void updateInputAngle (AngleControl *angle_control);
+void updateInputAngle (AngleControl *angle_control, Ball ball);
 void updateBall(Ball *ball);
 void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles);
 void applyDampening (Ball *ball);
@@ -105,7 +111,7 @@ int main () {
   UnloadImage(backgroundImage);
 
   // Ball angle input
-  AngleControl angle_control = { 90, 1, false, true };
+  AngleControl angle_control = { 90, 1, true };
 
   // TODO: Handle these in different functions for better readability
   // like a function for Player
@@ -122,7 +128,7 @@ int main () {
   printf("y_velocity: %f\n", y_velocity);
 
   // Create Ball and Frame
-  Ball ball = createBall(x_velocity, y_velocity, 600.0f);    
+  Ball ball = createBall(x_velocity, y_velocity, 600.0f, 780.0f, false);    
   Frame frame = createFrame();
   Scoreboard scoreboard = createScoreboard();
 
@@ -147,26 +153,32 @@ int main () {
 
     // Update
     updateBall(&ball);
-    updateInputAngle(&angle_control);
+    updateInputAngle(&angle_control, ball);
 
     // Check Collision with Pins, Walls, and Obstacles
     checkCollision(&ball, &frame, obstacles);
+    
+    drawInputForceBarFrame(ball);
 
-    // start the ball movement when space is pressed
-    if (IsKeyPressed(KEY_SPACE)) {
-      angle_control.ball_released = true;
+    // Aim the arrow and increase force while space is being pressed
+    if (IsKeyDown(KEY_SPACE) && !ball.is_released) {
       angle_control.arrow_moving = false;
       angle = angle_control.arrow_angle;
-      power = 10.0f;
+      power += 0.5f;
+      if (power >= MAX_FORCE) {
+        power = MAX_FORCE;
+      }
+      drawInputForce(power);
+    }
+    
+    //  Apply force to the ball when space key is released
+    if (IsKeyReleased(KEY_SPACE) && !ball.is_released) {
+      ball.is_released = true;
       velocity = computeVelocityFromInput(power, angle);
       ball.x_velocity = velocity.x;
       ball.y_velocity = velocity.y;
     }
-
-    // Draw 
-    //drawScoreBoardFrame();
-    //drawUserInputFrame();
-    //drawBowlingGameFrame();
+    
     drawBall(ball);     
     drawInputAngle(angle_control, ball);   
     drawFrame(frame);
@@ -180,9 +192,8 @@ int main () {
 
 // Ball's y_pos is set to default value of 700.0f 
 // because the control is only in the x-axis
-Ball createBall (float x_velocity, float y_velocity, float x_pos) {
-  float y_pos = 700.0f;
-  return (Ball) { x_velocity, y_velocity, x_pos, y_pos };
+Ball createBall (float x_velocity, float y_velocity, float x_pos, float y_pos, bool is_released) {
+  return (Ball) { x_velocity, y_velocity, x_pos, y_pos, is_released };
 }
 
 Player createPlayer (char name[20], int score, Ball ball) {
@@ -350,8 +361,6 @@ void drawPin(Pin pin) {
   }
 }
 
-
-
 void drawFrame (Frame frame) {
   for (int i = 0; i < PINS_NUM; ++i) {
     drawPin(frame.pins[i]);
@@ -414,8 +423,8 @@ Vector2 computeVelocityFromInput(float power, float angle) {
   return (Vector2) { power * cos(angle * DEG2RAD), power * sin(angle * DEG2RAD) };
 }
 
-void updateInputAngle (AngleControl *angle_control) {
-  if (!angle_control->ball_released) {
+void updateInputAngle (AngleControl *angle_control, Ball ball) {
+  if (angle_control->arrow_moving) {
     angle_control->arrow_angle += angle_control->angle_speed;
     if (angle_control->arrow_angle >= MAX_ANGLE || angle_control->arrow_angle <= MIN_ANGLE) {
       angle_control->angle_speed *= -1;
@@ -424,10 +433,25 @@ void updateInputAngle (AngleControl *angle_control) {
 }
 
 void drawInputAngle (AngleControl angle_control, Ball ball) {
-  if (angle_control.arrow_moving) {
+  if (!ball.is_released) {
     DrawLineEx(
       (Vector2){ ball.x_pos, ball.y_pos },
       (Vector2){ ball.x_pos + cosf(angle_control.arrow_angle * DEG2RAD) * 100, ball.y_pos - sinf(angle_control.arrow_angle * DEG2RAD) * 100}, 2, RED
     );
+  }
+}
+
+void drawInputForce (float power) {
+  float curr_force = power / MAX_FORCE;
+  float force_bar_width = curr_force * 196;
+  Rectangle force_bar = {502, 832, force_bar_width, 16};
+  DrawRectangleRec(force_bar, RED);
+}
+
+void drawInputForceBarFrame (Ball ball) {
+  if (!ball.is_released) {
+    Rectangle bar_border = {500, 830, 200, 20};
+    DrawRectangleRec(bar_border, BARBGCOLOR);
+    DrawRectangleLinesEx(bar_border, 2, BARBORDERCOLOR);
   }
 }
