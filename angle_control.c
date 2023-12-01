@@ -3,7 +3,7 @@
 #include <math.h>
 
 void updateInputAngle (AngleControl *angle_control) {
-  if (!angle_control->arrow_moving) {
+  if (angle_control->arrow_moving) {
     angle_control->arrow_angle += angle_control->angle_speed;
     if (angle_control->arrow_angle >= MAX_ANGLE || angle_control->arrow_angle <= MIN_ANGLE) {
       angle_control->angle_speed *= -1;

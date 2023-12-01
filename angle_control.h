@@ -9,7 +9,6 @@
 typedef struct {
   float arrow_angle;
   int angle_speed;
-  bool ball_released;
   bool arrow_moving;
 } AngleControl;
 
