@@ -42,12 +42,14 @@ void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles) {
   }
 
   // Check Collision with Obstacles
+  // Use a rectangle that encompasses the entire ball for collision check
+  Rectangle ballRect = { ball->x_pos - BALL_RADIUS, ball->y_pos - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2 };
   for (int i = 0; i < OBSTACLE_NUM; ++i) {
-    if (CheckCollisionRecs((Rectangle) { ball->x_pos, ball->y_pos }, obstacles[i].destRect)) {
-      ball->x_velocity *= -1;
-      ball->y_velocity *= -1;
+    if (CheckCollisionRecs(ballRect, obstacles[i].destRect)) {
+        ball->x_velocity *= -1;
+        ball->y_velocity *= -1;
 
-      applyDampening(ball);
+        applyDampening(ball);
     }
   }
 
