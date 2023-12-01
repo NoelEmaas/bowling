@@ -13,6 +13,9 @@
 #include "pin.h"
 #include "angle_control.h"
 
+void drawInputForceBarFrame(Ball ball);
+void drawInputForce(float power);
+
 int main () {
   // Initialization
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Basic Window");
@@ -24,7 +27,7 @@ int main () {
   UnloadImage(backgroundImage);
 
   // Ball angle input
-  AngleControl angle_control = { 90, 1, false, true };
+  AngleControl angle_control = { 90, 1, true };
 
   // TODO: Handle these in different functions for better readability
   // like a function for Player
@@ -41,7 +44,7 @@ int main () {
   printf("y_velocity: %f\n", y_velocity);
 
   // Create Ball and Frame
-  Ball ball = createBall(x_velocity, y_velocity, 600.0f);    
+  Ball ball = createBall(x_velocity, y_velocity, 600.0f, 780.0f, false);    
   Frame frame = createFrame();
   Scoreboard scoreboard = createScoreboard();
 
@@ -70,22 +73,28 @@ int main () {
 
     // Check Collision with Pins, Walls, and Obstacles
     checkCollision(&ball, &frame, obstacles);
+    
+    drawInputForceBarFrame(ball);
 
-    // start the ball movement when space is pressed
-    if (IsKeyPressed(KEY_SPACE)) {
-      angle_control.ball_released = true;
+    // Aim the arrow and increase force while space is being pressed
+    if (IsKeyDown(KEY_SPACE) && !ball.is_released) {
       angle_control.arrow_moving = false;
       angle = angle_control.arrow_angle;
-      power = 10.0f;
+      power += 0.5f;
+      if (power >= MAX_FORCE) {
+        power = MAX_FORCE;
+      }
+      drawInputForce(power);
+    }
+    
+    //  Apply force to the ball when space key is released
+    if (IsKeyReleased(KEY_SPACE) && !ball.is_released) {
+      ball.is_released = true;
       velocity = computeVelocityFromInput(power, angle);
       ball.x_velocity = velocity.x;
       ball.y_velocity = velocity.y;
     }
-
-    // Draw 
-    //drawScoreBoardFrame();
-    //drawUserInputFrame();
-    //drawBowlingGameFrame();
+    
     drawBall(ball);     
     drawInputAngle(angle_control, ball);   
     drawFrame(frame);
@@ -97,3 +106,17 @@ int main () {
   return 0;
 }
 
+void drawInputForce (float power) {
+  float curr_force = power / MAX_FORCE;
+  float force_bar_width = curr_force * 196;
+  Rectangle force_bar = {502, 832, force_bar_width, 16};
+  DrawRectangleRec(force_bar, RED);
+}
+
+void drawInputForceBarFrame (Ball ball) {
+  if (!ball.is_released) {
+    Rectangle bar_border = {500, 830, 200, 20};
+    DrawRectangleRec(bar_border, BARBGCOLOR);
+    DrawRectangleLinesEx(bar_border, 2, BARBORDERCOLOR);
+  }
+}

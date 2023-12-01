@@ -13,9 +13,10 @@ typedef struct {
   float y_velocity;
   float x_pos;
   float y_pos;
+  bool is_released;
 } Ball;
 
-Ball createBall (float x_velocity, float y_velocity, float x_pos);
+Ball createBall (float x_velocity, float y_velocity, float x_pos, float y_pos, bool is_released);
 void drawBall (Ball ball);
 void updateBall(Ball *ball);
 void checkCollision (Ball *ball, Frame *frame, Obstacle *obstacles);

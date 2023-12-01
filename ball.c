@@ -3,9 +3,8 @@
 
 // Ball's y_pos is set to default value of 700.0f 
 // because the control is only in the x-axis
-Ball createBall (float x_velocity, float y_velocity, float x_pos) {
-  float y_pos = 700.0f;
-  return (Ball) { x_velocity, y_velocity, x_pos, y_pos };
+Ball createBall (float x_velocity, float y_velocity, float x_pos, float y_pos, bool is_released) {
+  return (Ball) { x_velocity, y_velocity, x_pos, y_pos, is_released};
 }
 
 void drawBall (Ball ball) {
