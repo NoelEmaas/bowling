@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cc main.c scoreboard.c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+cc ./*c -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 

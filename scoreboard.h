@@ -2,8 +2,7 @@
 #define SCOREBOARD_H
 
 #include "raylib.h"
-
-#define ROUND_NUM 10
+#include "constants.h"
 
 typedef struct {
     int round_no;
