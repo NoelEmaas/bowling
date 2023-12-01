@@ -10,7 +10,7 @@ Obstacle createObstacle () {
   obstacle.image = LoadImage("./assets/obstacle.png");
   obstacle.texture = LoadTextureFromImage(obstacle.image);
 
-  Vector2 position = { (float)GetRandomValue(400 + obstacle.texture.width * scale, 800 - obstacle.texture.width  * scale), (float)GetRandomValue(350 - obstacle.texture.height  * scale, 750 - obstacle.texture.height  * scale) };
+  Vector2 position = { (float)GetRandomValue(400 + obstacle.texture.width * scale, 800 - obstacle.texture.width  * scale), (float)GetRandomValue(400 - obstacle.texture.height  * scale, 700 - obstacle.texture.height  * scale) };
   
   obstacle.sourceRect = (Rectangle) {0, 0, (float)obstacle.texture.width, (float)obstacle.texture.height};
   obstacle.destRect = (Rectangle) {position.x, position.y, obstacle.texture.width * scale, obstacle.texture.height * scale};
