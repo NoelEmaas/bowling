@@ -42,8 +42,8 @@
   - Lastly, compile the program
     ```
     cd /bowling
-    ./compile.sh
-    ./a.out
+    make 
+    ./bin/main
     ```
 
 
