@@ -1,5 +1,5 @@
 CC = cc
-CFLAGS = -Iinclude
+CFLAGS = -Wall -Wextra -Iinclude 
 LIBS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 SRCDIR = src
 OBJDIR = obj
@@ -17,10 +17,10 @@ $(BINDIR)/main: $(OBJECTS) | $(BINDIR)
 	$(CC) $(OBJECTS) -o $@ $(LIBS)
 
 $(OBJDIR):
-	mkdir -p $(OBJDIR)
+	@if [ ! -d "$(OBJDIR)" ]; then mkdir -p $(OBJDIR); fi
 
 $(BINDIR):
-	mkdir -p $(BINDIR)
+	@if [ ! -d "$(BINDIR)" ]; then mkdir -p $(BINDIR); fi
 
 clean:
 	rm -rf $(OBJDIR) $(BINDIR)
