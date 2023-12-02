@@ -10,13 +10,13 @@ Frame createFrame () {
 
   switch (random) {
         case 1: // Triangle
-            createTriangleFrame(&frame, 400.0f, startY);
+            createTriangleFrame(&frame);
             break;
         case 2: // Hollow Square
-            createHollowSquareFrame(&frame, 440.0f, startY);
+            createHollowSquareFrame(&frame, startY);
             break;
         case 3: // Diamond
-            createDiamondFrame(&frame, 510.0f, startY);
+            createDiamondFrame(&frame, startY);
             break;
         default:
             break;
@@ -24,7 +24,7 @@ Frame createFrame () {
 
   return frame;
 } 
-void createTriangleFrame(Frame *frame, float startX, float startY) {
+void createTriangleFrame(Frame *frame) {
     for (int i = 0; i < PINS_NUM; ++i) {
       if (i < 4) {
         frame->pins[i] = createPin(false, 400.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), 100.0f);
@@ -38,7 +38,7 @@ void createTriangleFrame(Frame *frame, float startX, float startY) {
     }
 }
 
-void createHollowSquareFrame(Frame *frame, float startX, float startY) {
+void createHollowSquareFrame(Frame *frame, float startY) {
   for (int i = 0; i < 3; ++i) {
       frame->pins[i] = createPin(false, 440.0f + (i * (PIN_RADIUS * 2 + PIN_DISTANCE)), startY);
     }
@@ -57,7 +57,7 @@ void createHollowSquareFrame(Frame *frame, float startX, float startY) {
 }
 
 
-void createDiamondFrame(Frame *frame, float startX, float startY) {
+void createDiamondFrame(Frame *frame, float startY) {
   frame->pins[0] = createPin(false, 510.0f, startY);
 
   frame->pins[1] = createPin(false, 510.0f - (PIN_RADIUS + PIN_DISTANCE / 2), startY + (PIN_RADIUS * 2 + PIN_DISTANCE));

@@ -13,9 +13,9 @@ typedef struct {
 } Frame;
 
 Frame createFrame ();
-void createTriangleFrame(Frame *frame, float startX, float startY);
-void createHollowSquareFrame(Frame *frame, float startX, float startY);
-void createDiamondFrame(Frame *frame, float startX, float startY);
+void createTriangleFrame(Frame *frame);
+void createHollowSquareFrame(Frame *frame, float startY);
+void createDiamondFrame(Frame *frame, float startY);
 void drawFrame (Frame frame);
 void drawScoreBoardFrame ();
 void drawUserInputFrame ();
