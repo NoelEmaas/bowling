@@ -8,6 +8,7 @@
 
 typedef struct {
   float arrow_angle;
+  float arrow_power;
   int angle_speed;
   bool arrow_moving;
 } AngleControl;

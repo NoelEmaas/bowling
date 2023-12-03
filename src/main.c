@@ -13,104 +13,64 @@
 #include "pin.h"
 #include "angle_control.h"
 
-void drawInputForceBarFrame(Ball ball);
+void drawInputForceBarFrame();
 void drawInputForce(float power);
+void handleInput(Ball *ball, AngleControl *angle_control);
+int getScore(Frame *frame);
+void playRound(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player);
+void playRoundPlayer1(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no);
+void playRoundPlayer2(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no);
 
 int main () {
-  // Initialization
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Basic Window");
+  // Create Window and set FPS
+  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Bowling Game");
   SetTargetFPS(60);
 
   // Load Background Image
   Image backgroundImage = LoadImage("./assets/bowling_bg.png");
-  Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);
+  Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);  
   UnloadImage(backgroundImage);
 
-  // Ball angle input
-  AngleControl angle_control = { 90, 1, true };
-
-  // TODO: Handle these in different functions for better readability
-  // like a function for Player
-  // Input power and angle
+  // Initialize game objects
   float power = 0.0f;
-  float angle = angle_control.arrow_angle;
-
-  // Compute velocity from input
-  Vector2 velocity = computeVelocityFromInput(power, angle);
-  float x_velocity = velocity.x;
-  float y_velocity = velocity.y;
-
-  printf("x_velocity: %f\n", x_velocity);
-  printf("y_velocity: %f\n", y_velocity);
-
-  // Create Ball and Frame
-  Ball ball = createBall(x_velocity, y_velocity, 600.0f, 780.0f, false);    
+  float angle = 90.0f;
+  Vector2 velocity = { 0.0f, 0.0f };
+  AngleControl angle_control = { 90, 0, 1, true };
+  Ball ball = createBall(0.0f, 0.0f, 600.0f, 780.0f, false);    
   Frame frame = createFrame();
   Scoreboard scoreboard = createScoreboard();
+  Obstacle *obstacles = createObstacles(OBSTACLE_NUM);
 
-  // Create Obstacles
-  Obstacle obstacles[OBSTACLE_NUM];
-  for (int i = 0; i < OBSTACLE_NUM; ++i) {
-    obstacles[i] = createObstacle();
-
-    // Check if the obstacle is created on top of other obstacles
-    if (i > 0) {
-      for (int j = 0; j < i; ++j) {
-        printf("Checking collision between obstacle %d and %d\n", i, j);
-        printf("Obstacle %d: x: %f, y: %f\n", i, obstacles[i].destRect.x, obstacles[i].destRect.y);
-        printf("Obstacle %d: x: %f, y: %f\n", j, obstacles[j].destRect.x, obstacles[j].destRect.y);
-        if (CheckCollisionRecs(obstacles[i].destRect, obstacles[j].destRect)) {
-          printf("Collision detected\n");
-          obstacles[i] = createObstacle();
-          j = 0;
-        }
-      }
-    }
-  } 
+  // Initialize game variables
+  int throw_no = 1;
+  int current_player = 1;
 
   while(!WindowShouldClose()) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
-
-    // Draw Background Image
     DrawTexture(backgroundTexture, 0, 0, WHITE);
 
-    displayScoreboard(&scoreboard, 1);
-    // Draw Obstacles
-    for (int i = 0; i < OBSTACLE_NUM; ++i) {
-      DrawTexturePro(obstacles[i].texture, obstacles[i].sourceRect, obstacles[i].destRect, (Vector2) { 0, 0 }, 0.0f, WHITE);
-    }
-
-    // Update
-    updateBall(&ball);
-    updateInputAngle(&angle_control);
-
-    // Check Collision with Pins, Walls, and Obstacles
-    checkCollision(&ball, &frame, obstacles);
-    
-    drawInputForceBarFrame(ball);
-
-    // Aim the arrow and increase force while space is being pressed
-    if (IsKeyDown(KEY_SPACE) && !ball.is_released) {
-      angle_control.arrow_moving = false;
-      angle = angle_control.arrow_angle;
-      power += 0.5f;
-      if (power >= MAX_FORCE) {
-        power = MAX_FORCE;
+    if (!scoreboard.game_over) {
+      if (scoreboard.current_round == ROUND_NUM) {
+        setWinner(&scoreboard);
+        scoreboard.game_over = true;
+      } else {
+        playRound(&scoreboard, &frame, &ball, &angle_control, &throw_no, &current_player);
       }
-      drawInputForce(power);
+
+      // Update Ball 
+      updateBall(&ball);
+
+      // Check Collision with Pins, Walls, and Obstacles
+      checkCollision(&ball, &frame, obstacles);
+
+      // Draw Game Objects
+      drawObstacles(obstacles, OBSTACLE_NUM);
+      drawBall(ball);     
+      drawInputAngle(angle_control, ball);   
     }
-    
-    //  Apply force to the ball when space key is released
-    if (IsKeyReleased(KEY_SPACE) && !ball.is_released) {
-      ball.is_released = true;
-      velocity = computeVelocityFromInput(power, angle);
-      ball.x_velocity = velocity.x;
-      ball.y_velocity = velocity.y;
-    }
-    
-    drawBall(ball);     
-    drawInputAngle(angle_control, ball);   
+
+    displayScoreboard(&scoreboard, 1);
     drawFrame(frame);
 
     EndDrawing();
@@ -127,10 +87,146 @@ void drawInputForce (float power) {
   DrawRectangleRec(force_bar, RED);
 }
 
-void drawInputForceBarFrame (Ball ball) {
-  if (!ball.is_released) {
-    Rectangle bar_border = {500, 830, 200, 20};
-    DrawRectangleRec(bar_border, BARBGCOLOR);
-    DrawRectangleLinesEx(bar_border, 2, BARBORDERCOLOR);
+void drawInputForceBarFrame () {
+  Rectangle bar_border = {500, 830, 200, 20};
+  DrawRectangleRec(bar_border, BARBGCOLOR);
+  DrawRectangleLinesEx(bar_border, 2, BARBORDERCOLOR);
+}
+
+void handleInput (Ball *ball, AngleControl *angle_control) {
+  Vector2 velocity = { 0.0f, 0.0f };
+
+  updateInputAngle(angle_control);
+  drawInputForceBarFrame();
+
+  // Aim the arrow and increase force while space is being pressed
+  if (IsKeyDown(KEY_SPACE)) {
+    angle_control->arrow_moving = false;
+    angle_control->arrow_power += 0.5f;
+    if (angle_control->arrow_power >= MAX_FORCE) {
+      angle_control->arrow_power = MAX_FORCE;
+    }
+    drawInputForce(angle_control->arrow_power);
+  }
+  
+  //  Apply force to the ball when space key is released
+  if (IsKeyReleased(KEY_SPACE)) {
+    ball->is_released = true;
+    velocity = computeVelocityFromInput(angle_control->arrow_power, angle_control->arrow_angle);
+    ball->x_velocity = velocity.x;
+    ball->y_velocity = velocity.y;
+
+    printf("Angle: %f\n", angle_control->arrow_angle);
+    printf("Velocity: x: %f, y: %f\n", ball->x_velocity, ball->y_velocity);
+  }
+}
+
+int getScore (Frame *frame) {
+  int score = 0;
+  for (int i = 0; i < PINS_NUM; ++i) {
+    if (frame->pins[i].is_knocked_down && !frame->pins[i].is_knocked_down_prev) {
+      score += 1;
+
+      frame->pins[i].is_knocked_down_prev = true;
+    }
+  }
+  return score;
+}
+
+void resetFrame (Frame *frame) {
+  for (int i = 0; i < PINS_NUM; ++i) {
+    frame->pins[i].is_knocked_down = false;
+    frame->pins[i].is_knocked_down_prev = false;
+  }
+}
+
+void playRound (Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player) {  
+  if (*current_player == 1) {
+    playRoundPlayer1(scoreboard, frame, ball, angle_control, throw_no);
+
+    if (*throw_no > 2) {
+      *current_player = 2;
+      *throw_no = 1;
+    }
+  } else {
+    playRoundPlayer2(scoreboard, frame, ball, angle_control, throw_no);
+
+    if (*throw_no > 2) {
+      *current_player = 1;
+      *throw_no = 1;
+    }
+  }
+} 
+
+void playRoundPlayer1(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no) {
+  if (!ball->is_released) {
+    handleInput(ball, angle_control);
+  } 
+
+  if (ball->is_released && ball->x_velocity == 0.0f && ball->y_velocity == 0.0f) {    
+    int score = getScore(frame);
+
+    printf("Throw %d\n", *throw_no);
+    roll(scoreboard, 1, *throw_no, score);
+
+    if (*throw_no < 2) {
+      *throw_no = 2;
+      printf("Throw %d\n", *throw_no);
+    } else {
+      resetFrame(frame);
+
+      *throw_no = 3;
+    }
+
+    ball->is_released = false;
+    ball->x_pos = 600.0f;
+    ball->y_pos = 780.0f;
+    ball->x_velocity = 0.0f;
+    ball->y_velocity = 0.0f;
+    angle_control->arrow_power = 0.0f;
+    angle_control->arrow_angle = 90.0f;
+    angle_control->arrow_moving = true;
+
+    if (score == PINS_NUM) {
+      resetFrame(frame);
+    }
+  }
+}
+
+void playRoundPlayer2(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no) {
+  if (!ball->is_released) {
+    handleInput(ball, angle_control);
+  } 
+
+  if (ball->is_released && ball->x_velocity == 0.0f && ball->y_velocity == 0.0f) {    
+    int score = getScore(frame);
+
+    printf("Throw %d\n", *throw_no);
+    roll(scoreboard, 2, *throw_no, score);
+
+    if (*throw_no < 2) {
+      *throw_no = 2;
+      printf("Throw %d\n", *throw_no);
+    } else {
+      *throw_no = 3;
+
+      *frame = createFrame();
+      nextRound(scoreboard);
+    }
+
+    ball->is_released = false;
+    ball->x_pos = 600.0f;
+    ball->y_pos = 780.0f;
+    ball->x_velocity = 0.0f;
+    ball->y_velocity = 0.0f;
+    angle_control->arrow_power = 0.0f;
+    angle_control->arrow_angle = 90.0f;
+    angle_control->arrow_moving = true;
+
+    if (score == PINS_NUM) {
+      for (int i = 0; i < PINS_NUM; ++i) {
+        frame->pins[i].is_knocked_down = false;
+      }
+    }
   }
 }

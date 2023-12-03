@@ -5,6 +5,7 @@
 
 typedef struct {
   bool is_knocked_down;
+  bool is_knocked_down_prev;  // used to check if pin was knocked down in previous frame
   float x_pos;
   float y_pos;
   Image image;

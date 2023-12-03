@@ -52,15 +52,25 @@ void displayScoreboard(Scoreboard *scoreboard, int currentPlayer) {
 }
 
 void roll(Scoreboard *scoreboard, int player, int throw_no, int score) {
+    printf("Player %d, Throw %d, Score %d\n", player, throw_no, score);
     if (player == 1) {
-        scoreboard->rounds[scoreboard->current_round].p1_throw_1 = (throw_no == 1) ? score : 0;
-        scoreboard->rounds[scoreboard->current_round].p1_throw_2 = (throw_no == 2) ? score : 0;
+        if (throw_no == 1) {
+            scoreboard->rounds[scoreboard->current_round].p1_throw_1 = score;
+        } else {
+            scoreboard->rounds[scoreboard->current_round].p1_throw_2 = score;
+        }
+
         scoreboard->rounds[scoreboard->current_round].p1_score += score;
     } else {
-        scoreboard->rounds[scoreboard->current_round].p2_throw_1 = (throw_no == 1) ? score : 0;
-        scoreboard->rounds[scoreboard->current_round].p2_throw_2 = (throw_no == 2) ? score : 0;
+        if (throw_no == 1) {
+            scoreboard->rounds[scoreboard->current_round].p2_throw_1 = score;
+        } else {
+            scoreboard->rounds[scoreboard->current_round].p2_throw_2 = score;
+        }
+
         scoreboard->rounds[scoreboard->current_round].p2_score += score;
     }
+
 }
 
 void nextRound(Scoreboard *scoreboard) {
@@ -74,6 +84,17 @@ void setWinner(Scoreboard *scoreboard) {
         p1 += scoreboard->rounds[i].p1_score;
         p2 += scoreboard->rounds[i].p2_score;
     }
+
+    if (p1 > p2) {
+        scoreboard->winner = 1;
+        scoreboard->p1_games_won++;
+    } else {
+        scoreboard->winner = 2;
+        scoreboard->p2_games_won++;
+    }
+
+    scoreboard->p1_final_score = p1;
+    scoreboard->p2_final_score = p2;
 }
 
 Round createRound(int round_no) {
@@ -129,6 +150,7 @@ void displayRound(Round round, int x, int y, bool current) {
 
     // Display total frame score for p2
     if (round.p2_throw_1 != -1) {
+        printf("p2_score: %d\n", round.p2_score);
         const char *p2_score = TextFormat("%d", round.p2_score);
         DrawText(p2_score, x + 320, y + 33, 25, GRAY);
     }
