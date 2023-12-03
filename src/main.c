@@ -32,9 +32,6 @@ int main () {
   UnloadImage(backgroundImage);
 
   // Initialize game objects
-  float power = 0.0f;
-  float angle = 90.0f;
-  Vector2 velocity = { 0.0f, 0.0f };
   AngleControl angle_control = { 90, 0, 1, true };
   Ball ball = createBall(0.0f, 0.0f, 600.0f, 780.0f, false);    
   Frame frame = createFrame();
