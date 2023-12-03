@@ -21,6 +21,12 @@ Scoreboard createScoreboard() {
     return scoreboard;
 }
 
+int getConfigIdx(int score) {
+    if (score > 99) return 2;
+    else if (score > 9) return 1;
+    return 0;
+}
+
 void displayScoreboard(Scoreboard *scoreboard, int currentPlayer) {
     // Display P1 & P2
     DrawText("1", 288, 30, 45, (currentPlayer == 1) ? PURPLE : GRAY);
@@ -32,11 +38,29 @@ void displayScoreboard(Scoreboard *scoreboard, int currentPlayer) {
 
     if (scoreboard->game_over) {
         // Display final score
+        int Y_CONF[3] = {686, 692, 696};
+        int P1_X_CONF[3] = {280, 270, 270};
+        int P2_X_CONF[3] = {338, 329, 329};
+        int FONT_CONF[3] = {50, 40, 29};
+        
+        int p1_conf_idx = getConfigIdx(scoreboard->p1_final_score);
+        int p2_conf_idx = getConfigIdx(scoreboard->p2_final_score);
+
+        // p1 config
+        int p1_final_score_y = Y_CONF[p1_conf_idx];
+        int p1_final_score_x = P1_X_CONF[p1_conf_idx];
+        int p1_font_size = FONT_CONF[p1_conf_idx];
+
+        // p2 config
+        int p2_final_score_y = Y_CONF[p2_conf_idx];
+        int p2_final_score_x = P2_X_CONF[p2_conf_idx];
+        int p2_font_size = FONT_CONF[p2_conf_idx];
+
         const char *final_score = TextFormat("%d", scoreboard->p1_final_score);
-        DrawText(final_score, 280, 686, 50, PURPLE);
+        DrawText(final_score, p1_final_score_x, p1_final_score_y, p1_font_size, PURPLE);
 
         const char *p2_final_score = TextFormat("%d", scoreboard->p2_final_score);
-        DrawText(p2_final_score, 338, 687, 50, PURPLE);
+        DrawText(p2_final_score, p2_final_score_x, p2_final_score_y, p2_font_size, PURPLE);
 
         // Display winner
         const char *winner = TextFormat("PLAYER %d - BOWL", scoreboard->winner);
