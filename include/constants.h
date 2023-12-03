@@ -22,12 +22,12 @@
 #define PIN_RADIUS 20
 #define PIN_DISTANCE 30
 
-#define OBSTACLE_NUM 5
+#define OBSTACLE_NUM 0
 
 // min and max angles for input
 #define MAX_ANGLE 135
 #define MIN_ANGLE 45
 
-#define ROUND_NUM 10
+#define ROUND_NUM 1
 
 #endif

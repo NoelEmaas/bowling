@@ -14,6 +14,7 @@ Pin createPin(bool is_knocked_down, float x_pos, float y_pos) {
     UnloadImage(pin.image); 
 
     pin.is_knocked_down = is_knocked_down;
+    pin.is_knocked_down_prev = false;
     pin.x_pos = x_pos + 90;
     pin.y_pos = y_pos;
 

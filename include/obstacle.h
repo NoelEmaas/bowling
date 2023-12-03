@@ -11,4 +11,7 @@ typedef struct {
 } Obstacle;
 
 Obstacle createObstacle ();
+Obstacle* createObstacles (int numObstacles);
+void drawObstacles (Obstacle *obstacle, int numObstacles);
+
 #endif 

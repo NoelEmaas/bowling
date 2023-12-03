@@ -1,8 +1,8 @@
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "obstacle.h"
 
-// TODO: Make sure that the obstacle is not created on top of other obstacles
-// For now, the obstace is created at a random position such that is does not spawn
-// on top of the pins or near the starting position of the ball
 Obstacle createObstacle () {
   Obstacle obstacle;
   float scale = 0.1f;
@@ -18,4 +18,33 @@ Obstacle createObstacle () {
   UnloadImage(obstacle.image); 
 
   return obstacle;
+}
+
+Obstacle* createObstacles (int numObstacles) {
+  Obstacle *obstacles = (Obstacle*)malloc(sizeof(Obstacle) * numObstacles);
+  for (int i = 0; i < numObstacles; ++i) {
+    obstacles[i] = createObstacle();
+
+    // Check if the obstacle is created on top of other obstacles
+    if (i > 0) {
+      for (int j = 0; j < i; ++j) {
+        printf("Checking collision between obstacle %d and %d\n", i, j);
+        printf("Obstacle %d: x: %f, y: %f\n", i, obstacles[i].destRect.x, obstacles[i].destRect.y);
+        printf("Obstacle %d: x: %f, y: %f\n", j, obstacles[j].destRect.x, obstacles[j].destRect.y);
+        if (CheckCollisionRecs(obstacles[i].destRect, obstacles[j].destRect)) {
+          printf("Collision detected\n");
+          obstacles[i] = createObstacle();
+          j = 0;
+        }
+      }
+    }
+  }
+
+  return obstacles;
+}
+
+void drawObstacles (Obstacle *obstacles, int numObstacles) {
+  for (int i = 0; i < numObstacles; ++i) {
+    DrawTexturePro(obstacles[i].texture, obstacles[i].sourceRect, obstacles[i].destRect, (Vector2) { 0, 0 }, 0.0f, WHITE);
+  }
 }
