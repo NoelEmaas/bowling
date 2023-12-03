@@ -1,6 +1,6 @@
 CC = cc
-CFLAGS = $(shell pkg-config --cflags raylib) -Iinclude
-LIBS = $(shell pkg-config --libs raylib) 
+CFLAGS = -Wall -Wextra -Iinclude 
+LIBS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
