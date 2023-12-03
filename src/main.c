@@ -70,7 +70,7 @@ int main () {
       drawInputAngle(angle_control, ball);   
     }
 
-    displayScoreboard(&scoreboard, 1);
+    displayScoreboard(&scoreboard, current_player);
     drawFrame(frame);
 
     EndDrawing();
