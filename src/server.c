@@ -110,7 +110,7 @@ int main (int argc, char* argv[]) {
       drawObstacles(obstacles, OBSTACLE_NUM);
       drawBall(ball);    
 
-      if (current_player == 1):
+      if (current_player == 1)
         drawInputAngle(angle_control, ball);   
     }
 

@@ -1,20 +1,34 @@
 CC = cc
-CFLAGS = -Wall -Wextra -Iinclude 
-LIBS = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+CFLAGS = $(shell pkg-config --cflags raylib) -Iinclude
+LIBS = $(shell pkg-config --libs raylib)
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 
 SOURCES := $(wildcard $(SRCDIR)/*.c)
-OBJECTS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
 
-all: $(BINDIR)/main
+# Server-specific sources and objects
+SERVER_SOURCES := $(filter-out $(SRCDIR)/client.c, $(SOURCES))
+SERVER_OBJECTS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SERVER_SOURCES))
+
+# Client-specific sources and objects
+CLIENT_SOURCES := $(filter-out $(SRCDIR)/server.c, $(SOURCES))
+CLIENT_OBJECTS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CLIENT_SOURCES))
+
+all: server client
+
+server: $(BINDIR)/server
+
+client: $(BINDIR)/client
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BINDIR)/main: $(OBJECTS) | $(BINDIR)
-	$(CC) $(OBJECTS) -o $@ $(LIBS)
+$(BINDIR)/server: $(SERVER_OBJECTS) | $(BINDIR)
+	$(CC) $(SERVER_OBJECTS) -o $@ $(LIBS)
+
+$(BINDIR)/client: $(CLIENT_OBJECTS) | $(BINDIR)
+	$(CC) $(CLIENT_OBJECTS) -o $@ $(LIBS)
 
 $(OBJDIR):
 	@if [ ! -d "$(OBJDIR)" ]; then mkdir -p $(OBJDIR); fi
@@ -25,4 +39,4 @@ $(BINDIR):
 clean:
 	rm -rf $(OBJDIR) $(BINDIR)
 
-.PHONY: all clean
+.PHONY: all clean server client
