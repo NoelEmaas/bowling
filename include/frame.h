@@ -12,7 +12,7 @@ typedef struct {
   Pin pins[PINS_NUM];
 } Frame;
 
-Frame createFrame ();
+Frame createFrame (int index);
 void createTriangleFrame(Frame *frame);
 void createHollowSquareFrame(Frame *frame, float startY);
 void createDiamondFrame(Frame *frame, float startY);
