@@ -28,6 +28,6 @@
 #define MAX_ANGLE 135
 #define MIN_ANGLE 45
 
-#define ROUND_NUM 1
+#define ROUND_NUM 3
 
 #endif
