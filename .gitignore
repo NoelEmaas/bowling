@@ -1,4 +1,2 @@
 .vscode/
 *.out
-bin/
-obj/
