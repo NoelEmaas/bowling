@@ -74,6 +74,15 @@ int main (int argc, char* argv[]) {
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);  
   UnloadImage(backgroundImage);
 
+  // Load logo
+  Image logoImage = LoadImage("./assets/bowling_logo.png");
+  Image logoTitle = LoadImage("./assets/bowling_logo_title.png");
+  Texture2D logoTitleTexture = LoadTextureFromImage(logoTitle);
+  Texture2D logoTexture = LoadTextureFromImage(logoImage);
+  UnloadImage(logoImage);
+  UnloadImage(logoTitle);
+
+
   // Initialize game objects
   AngleControl angle_control = { 90, 0, 1, true };
   Ball ball = createBall(0.0f, 0.0f, 600.0f, 780.0f, false);    
@@ -89,6 +98,8 @@ int main (int argc, char* argv[]) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     DrawTexture(backgroundTexture, 0, 0, WHITE);
+    DrawTexture(logoTexture, 910, 100, WHITE);
+    DrawTexture(logoTitleTexture, 890, 300, WHITE);
 
     if (!is_frame_set) {
       // Receive frame from server
