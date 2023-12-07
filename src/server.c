@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -23,7 +24,7 @@ void drawInputForceBarFrame();
 void drawInputForce(float power);
 void handleInput(Ball *ball, AngleControl *angle_control);
 int getScore(Frame *frame);
-void playRound(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player, int client_socket);
+void playRound(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player, bool *is_frame_set, int client_socket);
 void playRoundPlayer1(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
 void playRoundPlayer2(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
 
@@ -77,29 +78,52 @@ int main (int argc, char* argv[]) {
   // Initialize game objects
   AngleControl angle_control = { 90, 0, 1, true };
   Ball ball = createBall(0.0f, 0.0f, 600.0f, 780.0f, false);    
-  Frame frame = createFrame();
+  Frame frame;
   Scoreboard scoreboard = createScoreboard();
   Obstacle *obstacles = createObstacles(OBSTACLE_NUM);
 
+  // srand(time(NULL));
+  // int random = (rand() % 3) + 1;
+  // Send frame to client
+  // int bytes_sent = send(client_socket, random, sizeof(int), 0);
+  // if (bytes_sent < 0) {
+  //   printf("Sending failed!");
+  // }
+
   // Initialize game variables
+  srand(time(NULL));
+
   int throw_no = 1;
   int current_player = 1;
-  
+  bool is_frame_set = false;
   while(!WindowShouldClose()) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     DrawTexture(backgroundTexture, 0, 0, WHITE);
+
+    // Create frame
+    if (!is_frame_set) {
+      int index = (rand() % 3) + 1;
+      frame = createFrame(index);
+      is_frame_set = true;
+
+      // Send to client
+      int bytes_sent = send(client_socket, &index, sizeof(int), 0);
+      printf("HELLO %d", bytes_sent);
+      if (bytes_sent < 0) {
+        printf("Sending failed!");
+        exit(1);
+      }      
+    }
 
     if (!scoreboard.game_over) {
       if (scoreboard.current_round == ROUND_NUM) {
         setWinner(&scoreboard);
         scoreboard.game_over = true;
       } else {
-        playRound(&scoreboard, &frame, &ball, &angle_control, &throw_no, &current_player, client_socket);
+        playRound(&scoreboard, &frame, &ball, &angle_control, &throw_no, &current_player, &is_frame_set, client_socket);
       }
-
       
-
       // Update Ball 
       updateBall(&ball);
 
@@ -184,7 +208,7 @@ void resetFrame (Frame *frame) {
   }
 }
 
-void playRound (Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player, int client_socket) {  
+void playRound (Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player, bool *is_frame_set, int client_socket) {  
   if (*current_player == 1) {
     playRoundPlayer1(scoreboard, frame, ball, angle_control, throw_no, client_socket);
 
@@ -198,6 +222,7 @@ void playRound (Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *
     if (*throw_no > 2) {
       *current_player = 1;
       *throw_no = 1;
+      *is_frame_set = false;
     }
   }
 } 
@@ -265,7 +290,10 @@ void playRoundPlayer2(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleCon
     } else {
       *throw_no = 3;
 
-      *frame = createFrame();
+      // srand(time(NULL));
+      // int random = (rand() % 3) + 1;
+
+      // *frame = createFrame(random);
       nextRound(scoreboard);
     }
 

@@ -1,14 +1,11 @@
 #include "frame.h"
 #include <string.h>
 
-Frame createFrame () {
+Frame createFrame (int index) {
   Frame frame;
-
-  srand(time(NULL));
-  int random = (rand() % 3) + 1;
   int startY = 100.0f;
 
-  switch (random) {
+  switch (index) {
         case 1: // Triangle
             createTriangleFrame(&frame);
             break;
