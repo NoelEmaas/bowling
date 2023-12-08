@@ -27,44 +27,9 @@ int getScore(Frame *frame);
 void playRound(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player, bool *is_frame_set, int client_socket);
 void playRoundPlayer1(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
 void playRoundPlayer2(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
+int client_connection (char* host, int port);
 
 int main (int argc, char* argv[]) {
-  
-  // Create socket
-  printf("Client starting ...\n");
-  int client_socket;
-  client_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (client_socket < 0){
-    printf("Error creating socket");
-    return EXIT_FAILURE;
-  }
-
-  // find host
-  printf("Looking for host %s ...\n", argv[1]);
-  struct hostent* server;
-  server = gethostbyname(argv[1]);
-  if (server == NULL) {
-    printf("Host not found!");
-    return EXIT_FAILURE;
-  }
-  printf("Host found!\n");
-
-
-  // Establish connection with server
-  struct sockaddr_in server_addr;
-  memset((char*)&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(atoi(argv[2]));
-  memcpy(&server_addr.sin_addr.s_addr, server->h_addr, server->h_length);
-
-  // Connect to server
-  int connect_res = connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr));
-  if (connect_res < 0) {
-    printf("Connection Failed!");
-    return EXIT_FAILURE;
-  }
-  printf("Connected to Server!\n\n");
-  
   // Create Window and set FPS
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Bowling Game");
   SetTargetFPS(60);
@@ -74,14 +39,10 @@ int main (int argc, char* argv[]) {
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);  
   UnloadImage(backgroundImage);
 
-  // Load logo
-  Image logoImage = LoadImage("./assets/bowling_logo.png");
-  Image logoTitle = LoadImage("./assets/bowling_logo_title.png");
-  Texture2D logoTitleTexture = LoadTextureFromImage(logoTitle);
-  Texture2D logoTexture = LoadTextureFromImage(logoImage);
-  UnloadImage(logoImage);
-  UnloadImage(logoTitle);
-
+  // Load Splash Image
+  Image splashImage = LoadImage("./assets/splash.png");
+  Texture2D splashTexture = LoadTextureFromImage(splashImage);  
+  UnloadImage(splashImage);
 
   // Initialize game objects
   AngleControl angle_control = { 90, 0, 1, true };
@@ -89,6 +50,20 @@ int main (int argc, char* argv[]) {
   Frame frame;
   Scoreboard scoreboard = createScoreboard();
   Obstacle *obstacles = createObstacles(OBSTACLE_NUM);
+
+  // Socket connection
+  bool is_connected = false;
+  bool find_connection = false;
+  int client_socket;
+
+  // Blink text
+  const char *start_text = "Press Enter to start!";
+  int fontSize = 40;
+  int textX = SCREEN_WIDTH / 2 - MeasureText(start_text, fontSize) / 2;
+  int textY = 650;
+  int framesCounter = 0;
+  bool showText = true;
+
 
   // Initialize game variables
   int throw_no = 1;
@@ -98,9 +73,41 @@ int main (int argc, char* argv[]) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     DrawTexture(backgroundTexture, 0, 0, WHITE);
-    DrawTexture(logoTexture, 910, 100, WHITE);
-    DrawTexture(logoTitleTexture, 890, 300, WHITE);
 
+    if (!is_connected) {
+      framesCounter++;
+      if (framesCounter >= 30) {
+        framesCounter = 0;
+        showText = !showText;
+      }
+
+      DrawTexture(splashTexture, 0, 0, WHITE);
+
+      if (IsKeyPressed(KEY_ENTER)) {
+        start_text = "Connecting to server ...";
+        textX = SCREEN_WIDTH / 2 - MeasureText(start_text, fontSize) / 2;
+        ClearBackground(RAYWHITE);
+        DrawTexture(splashTexture, 0, 0, WHITE);
+        DrawText(start_text, textX, textY, fontSize, MAROON);
+        EndDrawing();
+        client_socket = client_connection(argv[1], atoi(argv[2]));
+        find_connection = true;
+        printf("%d\n", client_socket);
+        is_connected = client_socket > 0;
+        if (!is_connected) {
+          start_text = "Press Enter to Try again";
+          textX = SCREEN_WIDTH / 2 - MeasureText(start_text, fontSize) / 2;
+        }
+      }
+
+      if (showText) {
+        DrawText(start_text, textX, textY, fontSize, MAROON);
+      }
+
+      EndDrawing();
+      continue;
+    }
+    
     if (!is_frame_set) {
       // Receive frame from server
       int index;
@@ -144,6 +151,45 @@ int main (int argc, char* argv[]) {
 
   CloseWindow();
   return 0;
+}
+
+int client_connection (char* host, int port) {
+  // Create socket
+  printf("Client starting ...\n");
+  int client_socket;
+  client_socket = socket(AF_INET, SOCK_STREAM, 0);
+  if (client_socket < 0){
+    printf("Error creating socket");
+    return -1;
+  }
+
+  // find host
+  printf("Looking for host %s ...\n", host);
+  struct hostent* server;
+  server = gethostbyname(host);
+  if (server == NULL) {
+    printf("Host not found!");
+    return -1;
+  }
+  printf("Host found!\n");
+
+
+  // Establish connection with server
+  struct sockaddr_in server_addr;
+  memset((char*)&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(port);
+  memcpy(&server_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+
+  // Connect to server
+  int connect_res = connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr));
+  if (connect_res < 0) {
+    printf("Connection Failed!");
+    return -1;
+  }
+  printf("Connected to Server!\n\n");
+
+  return client_socket;
 }
 
 void drawInputForce (float power) {

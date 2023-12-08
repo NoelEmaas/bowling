@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#include <pthread.h>
+
 #include "raylib.h"
 
 #include "constants.h"
@@ -27,45 +29,10 @@ int getScore(Frame *frame);
 void playRound(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player, bool *is_frame_set, int client_socket);
 void playRoundPlayer1(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
 void playRoundPlayer2(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
+int server_connection (int port);
+
 
 int main (int argc, char* argv[]) {
-  
-  // Create socket
-  int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (server_socket < 0) {
-    printf("Error creating socket!");
-    return EXIT_FAILURE;
-  }
-  
-  // Configure socket address
-  struct sockaddr_in server_addr;
-  memset((char*)&server_addr, 0, sizeof(server_addr));
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(atoi(argv[1]));
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-
-  // Bind socket
-  int bind_res = bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr));
-  if (bind_res < 0) {
-    printf("Binding failed!");
-    return EXIT_FAILURE;
-  }
-  
-  printf("Server is listening to port %d\n", atoi(argv[1]));
-  listen(server_socket, 5);
-  // accept client connection 
-  int client_socket, client_size;
-  struct sockaddr_in client_addr;
-  client_size = sizeof(client_addr);
-  
-  client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_size);
-  if (client_socket < 0) {
-    printf("Accepting Failed");
-    return EXIT_FAILURE;
-  }
-
-  printf("Client connected successfully!");
-
   // Create Window and set FPS
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Bowling Game");
   SetTargetFPS(60);
@@ -75,13 +42,10 @@ int main (int argc, char* argv[]) {
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);  
   UnloadImage(backgroundImage);
 
-  // Load logo
-  Image logoImage = LoadImage("./assets/bowling_logo.png");
-  Image logoTitle = LoadImage("./assets/bowling_logo_title.png");
-  Texture2D logoTexture = LoadTextureFromImage(logoImage);
-  Texture2D logoTitleTexture = LoadTextureFromImage(logoTitle);
-  UnloadImage(logoImage);
-  UnloadImage(logoTitle);
+  // Load Splash Image
+  Image splashImage = LoadImage("./assets/splash.png");
+  Texture2D splashTexture = LoadTextureFromImage(splashImage);  
+  UnloadImage(splashImage);
 
   // Initialize game objects
   AngleControl angle_control = { 90, 0, 1, true };
@@ -90,13 +54,18 @@ int main (int argc, char* argv[]) {
   Scoreboard scoreboard = createScoreboard();
   Obstacle *obstacles = createObstacles(OBSTACLE_NUM);
 
-  // srand(time(NULL));
-  // int random = (rand() % 3) + 1;
-  // Send frame to client
-  // int bytes_sent = send(client_socket, random, sizeof(int), 0);
-  // if (bytes_sent < 0) {
-  //   printf("Sending failed!");
-  // }
+  // Socket connection
+  bool is_connected = false;
+  bool find_connection = false;
+  int client_socket;
+
+  // Blink text
+  const char *start_text = "Press Enter to start!";
+  int fontSize = 40;
+  int textX = SCREEN_WIDTH / 2 - MeasureText(start_text, fontSize) / 2;
+  int textY = 650;
+  int framesCounter = 0;
+  bool showText = true;
 
   // Initialize game variables
   srand(time(NULL));
@@ -108,8 +77,34 @@ int main (int argc, char* argv[]) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     DrawTexture(backgroundTexture, 0, 0, WHITE);
-    DrawTexture(logoTexture, 910, 100, WHITE);
-    DrawTexture(logoTitleTexture, 890, 300, WHITE);
+
+    if (!is_connected) {
+      framesCounter++;
+      if (framesCounter >= 30) {
+        framesCounter = 0;
+        showText = !showText;
+      }
+
+      DrawTexture(splashTexture, 0, 0, WHITE);
+
+      if (IsKeyPressed(KEY_ENTER)) {
+        start_text = "Connecting to client ...";
+        ClearBackground(RAYWHITE);
+        DrawTexture(splashTexture, 0, 0, WHITE);
+        DrawText(start_text, textX, textY, fontSize, MAROON);
+        EndDrawing();
+        client_socket = server_connection(atoi(argv[1]));
+        find_connection = true;
+        is_connected = client_socket > 0;
+      }
+
+      if (showText && !find_connection) {
+        DrawText(start_text, textX, textY, fontSize, MAROON);
+      }
+
+      EndDrawing();
+      continue;
+    }
 
     // Create frame
     if (!is_frame_set) {
@@ -156,6 +151,45 @@ int main (int argc, char* argv[]) {
 
   CloseWindow();
   return 0;
+}
+
+int server_connection (int port) {
+  // Create socket
+  int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+  if (server_socket < 0) {
+    printf("Error creating socket!");
+    return -1;
+  }
+  
+  // Configure socket address
+  struct sockaddr_in server_addr;
+  memset((char*)&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(port);
+  server_addr.sin_addr.s_addr = INADDR_ANY;
+
+  // Bind socket
+  int bind_res = bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr));
+  if (bind_res < 0) {
+    printf("Binding failed!");
+    return -1;
+  }
+  
+  printf("Server is listening to port %d\n", port);
+  listen(server_socket, 5);
+  // accept client connection 
+  int client_socket, client_size;
+  struct sockaddr_in client_addr;
+  client_size = sizeof(client_addr);
+  
+  client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_size);
+  if (client_socket < 0) {
+    printf("Accepting Failed");
+    return -1;
+  }
+
+  printf("Client connected successfully!");
+  return client_socket;
 }
 
 void drawInputForce (float power) {
