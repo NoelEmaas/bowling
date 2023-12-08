@@ -75,28 +75,12 @@ int main (int argc, char* argv[]) {
   Texture2D backgroundTexture = LoadTextureFromImage(backgroundImage);  
   UnloadImage(backgroundImage);
 
-  // Load logo
-  Image logoImage = LoadImage("./assets/bowling_logo.png");
-  Image logoTitle = LoadImage("./assets/bowling_logo_title.png");
-  Texture2D logoTexture = LoadTextureFromImage(logoImage);
-  Texture2D logoTitleTexture = LoadTextureFromImage(logoTitle);
-  UnloadImage(logoImage);
-  UnloadImage(logoTitle);
-
   // Initialize game objects
   AngleControl angle_control = { 90, 0, 1, true };
   Ball ball = createBall(0.0f, 0.0f, 600.0f, 780.0f, false);    
   Frame frame;
   Scoreboard scoreboard = createScoreboard();
   Obstacle *obstacles = createObstacles(OBSTACLE_NUM);
-
-  // srand(time(NULL));
-  // int random = (rand() % 3) + 1;
-  // Send frame to client
-  // int bytes_sent = send(client_socket, random, sizeof(int), 0);
-  // if (bytes_sent < 0) {
-  //   printf("Sending failed!");
-  // }
 
   // Initialize game variables
   srand(time(NULL));
@@ -108,8 +92,6 @@ int main (int argc, char* argv[]) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     DrawTexture(backgroundTexture, 0, 0, WHITE);
-    DrawTexture(logoTexture, 910, 100, WHITE);
-    DrawTexture(logoTitleTexture, 890, 300, WHITE);
 
     // Create frame
     if (!is_frame_set) {

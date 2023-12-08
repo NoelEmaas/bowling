@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define SCREEN_WIDTH 1200
+#define SCREEN_WIDTH 820
 #define SCREEN_HEIGHT 880
 
 #define BALL_RADIUS 35
