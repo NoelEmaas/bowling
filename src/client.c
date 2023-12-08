@@ -57,7 +57,7 @@ int main (int argc, char* argv[]) {
   int client_socket;
 
   // Blink text
-  const char *start_text = "Press Enter to connect to client!";
+  const char *start_text = "Press Enter to start!";
   int fontSize = 40;
   int textX = SCREEN_WIDTH / 2 - MeasureText(start_text, fontSize) / 2;
   int textY = 650;
