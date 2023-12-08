@@ -29,6 +29,7 @@ int getScore(Frame *frame);
 void playRound(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int *current_player, bool *is_frame_set, int client_socket);
 void playRoundPlayer1(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
 void playRoundPlayer2(Scoreboard *scoreboard, Frame *frame, Ball *ball, AngleControl *angle_control, int *throw_no, int client_socket);
+int server_connection (int port);
 
 
 int main (int argc, char* argv[]) {
@@ -79,7 +80,6 @@ int main (int argc, char* argv[]) {
 
     if (!is_connected) {
       framesCounter++;
-      printf("%d\n", framesCounter);
       if (framesCounter >= 30) {
         framesCounter = 0;
         showText = !showText;
